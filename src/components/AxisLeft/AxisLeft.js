@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useSpring, animated } from "react-spring";
+import TicksLeft from "./TicksLeft";
 
 const AxisLeft = ({ yScale, domain, range }) => {
   const ticks = useMemo(() => {
@@ -13,6 +13,7 @@ const AxisLeft = ({ yScale, domain, range }) => {
     return yScale.ticks(numberOfTicksTarget).map((value) => ({
       value,
       yOffset: yScale(value),
+      key: value,
     }));
   }, [yScale, domain, range]);
 
@@ -23,24 +24,7 @@ const AxisLeft = ({ yScale, domain, range }) => {
         fill="none"
         stroke="currentColor"
       />
-      {ticks.map(({ value, yOffset }) => (
-        <g key={value} transform={`translate(0, ${yOffset})`}>
-          <animated.line x1={-6} x2={0} stroke="currentColor" />
-          <text
-            key={value}
-            x={-10}
-            dy={"0.3em"}
-            style={{
-              fontSize: "10px",
-              verticalAlign: "text-bottom",
-              textAnchor: "end",
-              transform: "translate(0px)",
-            }}
-          >
-            {value}
-          </text>
-        </g>
-      ))}
+      <TicksLeft ticks={ticks} yScale={yScale} />
     </svg>
   );
 };

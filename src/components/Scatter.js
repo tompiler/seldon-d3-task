@@ -1,14 +1,14 @@
 import React from "react";
 import { useSpring, animated } from "react-spring";
 import { scaleLinear } from "d3-scale";
-import AxisLeft from "./AxisLeft";
-import AxisBottom from "./AxisBottom";
+import AxisLeft from "./AxisLeft/AxisLeft";
+import AxisBottom from "./AxisBottom/AxisBottom";
 import { extent } from "d3-array";
 
 const Scatter = ({ data, open }) => {
   const props = useSpring({
     from: { r: 0, fill: "lightblue" },
-    to: { r: open ? 5 : 3, fill: open ? "purple" : "lightblue" },
+    to: { r: open ? 3 : 3, fill: open ? "purple" : "lightblue" },
   });
 
   const labelColours = {

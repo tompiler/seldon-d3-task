@@ -41,7 +41,7 @@ const rowFunc = (d) => {
 const getRandomData = () => {
   const newData = csv(rows, rowFunc).then((rows) => {
     const shuffled = shuffle(rows);
-    const newData = shuffled.slice(0, 30);
+    const newData = shuffled.slice(0, 50);
     // console.log(newData);
     return newData;
     // return rows.slice(0, 5);
@@ -55,22 +55,64 @@ export default function App() {
 
   useEffect(() => {
     getRandomData().then(setData);
+    // setData([
+    //   {
+    //     x: 14.570322,
+    //     y: -10.469496,
+    //     prediction: "bag",
+    //     timestamp: "05-09-2021 23:41:05.694446",
+    //   },
+    //   {
+    //     x: 15.7093115,
+    //     y: 10.980132,
+    //     prediction: "sneaker",
+    //     timestamp: "07-09-2021 17:10:38.483584",
+    //   },
+    //   {
+    //     x: 15.6710205,
+    //     y: -9.053257,
+    //     prediction: "bag",
+    //     timestamp: "03-09-2021 07:45:21.961154",
+    //   },
+    // ]);
     return () => undefined;
   }, []);
 
   if (!data) {
+    console.log("...loading");
     return <pre>Loading...</pre>;
   }
 
-  //   console.log(data);
   function handleClick(e) {
     getRandomData().then(setData);
+    // setData([
+    //   {
+    //     x: 16.51299,
+    //     y: 11.967254,
+    //     prediction: "sneaker",
+    //     timestamp: "07-09-2021 00:46:02.208671",
+    //   },
+    //   {
+    //     x: 7.1073494,
+    //     y: -7.025962,
+    //     prediction: "pullover",
+    //     timestamp: "03-09-2021 09:59:21.601728",
+    //   },
+    //   {
+    //     x: 8.1568,
+    //     y: -4.590148,
+    //     prediction: "pullover",
+    //     timestamp: "03-09-2021 05:41:28.822777",
+    //   },
+    // ]);
     if (open) {
       toggle(false);
     } else {
       toggle(true);
     }
   }
+
+  // console.log("NewData:", data);
 
   return (
     <div className="App">
