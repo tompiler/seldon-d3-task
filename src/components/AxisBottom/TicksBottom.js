@@ -2,13 +2,7 @@ import React, { useState, useEffect } from "react";
 import { animated, useTransition, to, config } from "react-spring";
 
 const TicksLeft = ({ ticks, xScale, height }) => {
-  const [_ticks, setTicks] = useState([]);
-
-  useEffect(() => {
-    setTicks(ticks);
-  }, [ticks]);
-
-  const transitions = useTransition(_ticks, {
+  const transitions = useTransition(ticks, {
     from: ({ value }) => {
       return { xOffset: xScale(value), opacity: 0 };
     },
@@ -22,7 +16,7 @@ const TicksLeft = ({ ticks, xScale, height }) => {
       return { xOffset: xScale(value), opacity: 0 };
     },
     keys: (item) => item.key,
-    config: { duration: 400 },
+    config: { duration: 200 },
   });
 
   return transitions((styles, item) => {
@@ -36,16 +30,18 @@ const TicksLeft = ({ ticks, xScale, height }) => {
       >
         {/* <animated.line x1={-6} x2={0} stroke="currentColor" /> */}
         <animated.line y1={height} y2={height + 6} stroke="currentColor" />
-        <animated.text
-          key={item.value}
-          y={height + 15}
-          style={{
-            fontSize: "10px",
-            textAnchor: "middle",
-          }}
-        >
-          {item.value}
-        </animated.text>
+        {item.value !== 0 && (
+          <animated.text
+            key={item.value}
+            y={height + 15}
+            style={{
+              fontSize: "10px",
+              textAnchor: "middle",
+            }}
+          >
+            {item.value}
+          </animated.text>
+        )}
       </animated.g>
     );
   });

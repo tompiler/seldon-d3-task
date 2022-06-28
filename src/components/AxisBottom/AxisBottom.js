@@ -1,12 +1,14 @@
 import React, { useMemo } from "react";
+import { min, max } from "d3-array";
 import TicksBottom from "./TicksBottom";
 
-const AxisBottom = ({ xScale, height, domain, range }) => {
+const AxisBottom = ({ xScale, yScale, width, height, tickInterval }) => {
+  const domain = xScale.domain();
+  const range = xScale.range();
+
   const ticks = useMemo(() => {
-    const width = range[1] - range[0] - 80;
     const domainWidth = domain[1] - domain[0];
     const pixelsPerTick = width / domainWidth;
-    const tickInterval = 5;
     const numberOfTicksTarget =
       Math.max(1, Math.floor(width / pixelsPerTick)) / tickInterval;
 
@@ -15,16 +17,21 @@ const AxisBottom = ({ xScale, height, domain, range }) => {
       xOffset: xScale(value),
       key: value,
     }));
-  }, [xScale, domain, range]);
+  }, [xScale, domain, width, tickInterval]);
+
+  // When the chart pans to the point where the axis is out of
+  // bounds, truncate the position so that it stays within view
+  // and the tick labels are visible
+  const truncatedYPos = min([height - 10, max([10, yScale(0)])]);
 
   return (
     <svg style={{ overflow: "visible" }}>
       <path
-        d={["M", range[0], height, "v", 0, "H", range[1], "v", 0].join(" ")}
+        d={["M", range[0], truncatedYPos, "v", 0, "H", range[1]].join(" ")}
         fill="none"
         stroke="currentColor"
       />
-      <TicksBottom ticks={ticks} xScale={xScale} height={height} />
+      <TicksBottom ticks={ticks} xScale={xScale} height={truncatedYPos} />
     </svg>
   );
 };

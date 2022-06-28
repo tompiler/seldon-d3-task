@@ -1,14 +1,31 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
+import styled from "styled-components";
 import { useSpring, animated } from "react-spring";
 import { scaleLinear } from "d3-scale";
 import AxisLeft from "./AxisLeft/AxisLeft";
 import AxisBottom from "./AxisBottom/AxisBottom";
-import { extent } from "d3-array";
+import { extent, max } from "d3-array";
+import { select } from "d3-selection";
+import { zoom, zoomTransform, zoomIdentity } from "d3-zoom";
+import { useChartDimensions } from "../hooks/useChartDimensions";
+
+const ScatterContainer = styled("div")`
+  width: 100%;
+  height: 86%;
+  border: 1px dashed blue;
+`;
 
 const Scatter = ({ data, open }) => {
+  const svgRef = useRef();
+  const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
+
   const props = useSpring({
-    from: { r: 0, fill: "lightblue" },
-    to: { r: open ? 3 : 3, fill: open ? "purple" : "lightblue" },
+    from: { r: 0, fill: "lightblue", opacity: 0.2 },
+    to: {
+      r: open ? 1.5 * currentZoomState.k : 1.5 * currentZoomState.k,
+      fill: open ? "purple" : "lightblue",
+      opacity: 0.8,
+    },
   });
 
   const labelColours = {
@@ -24,23 +41,55 @@ const Scatter = ({ data, open }) => {
     bag: "#64b5cd",
   };
 
-  const w = 600,
-    h = 600,
-    margin = {
-      top: 40,
-      bottom: 40,
-      left: 40,
-      right: 40,
-    };
+  const [ref, dimensions] = useChartDimensions({});
 
-  const width = w - margin.right - margin.left,
-    height = h - margin.top - margin.bottom;
+  const { width, height, boundedWidth, boundedHeight, marginTop, marginLeft } =
+    dimensions;
 
+  const clipPathId = "clippath1";
+  const clipPathPadding = 7.5;
+
+  // We need to create two yScales and two xScales
+  // to manage a 'clean' extent to center the chart on 0
   const xDomain = extent(data, (d) => d.x);
-  const xScale = scaleLinear().domain(xDomain).range([0, width]).nice();
+  const xScale = scaleLinear().domain(xDomain).range([0, boundedWidth]).nice();
 
   const yDomain = extent(data, (d) => d.y);
-  const yScale = scaleLinear().domain(yDomain).range([height, 0]).nice();
+  const yScale = scaleLinear().domain(yDomain).range([boundedHeight, 0]).nice();
+
+  const xMax = max(xScale.domain().map((d) => Math.abs(d)));
+  const yMax = max(yScale.domain().map((d) => Math.abs(d)));
+
+  const xScaleLive = scaleLinear()
+    .domain([-xMax, xMax])
+    .range([0, boundedWidth]);
+
+  const yScaleLive = scaleLinear()
+    .domain([-yMax, yMax])
+    .range([boundedHeight, 0]);
+
+  if (currentZoomState) {
+    const newXScale = currentZoomState.rescaleX(xScaleLive);
+    xScaleLive.domain(newXScale.domain());
+
+    const newYScale = currentZoomState.rescaleY(yScaleLive);
+    yScaleLive.domain(newYScale.domain());
+  }
+
+  useEffect(() => {
+    const svg = select(svgRef.current);
+
+    const zoomBehaviour = zoom()
+      .scaleExtent([0.8, 5])
+      .on("zoom", () => {
+        const zoomState = zoomTransform(svg.node());
+        setCurrentZoomState(zoomState);
+      });
+
+    svg.call(zoomBehaviour);
+  }, [currentZoomState, data]);
+
+  const tickInterval = currentZoomState.k >= 2.5 ? 2 : 5;
 
   const circles = data.map((d, i) => {
     const prediction = d.prediction.replace("-", "_").replace(" ", "_");
@@ -48,28 +97,53 @@ const Scatter = ({ data, open }) => {
       <animated.circle
         key={i}
         r={props.r}
-        cx={xScale(d.x)}
-        cy={yScale(d.y)}
-        style={{ fill: labelColours[prediction] }}
+        cx={xScaleLive(d.x)}
+        cy={yScaleLive(d.y)}
+        style={{ fill: labelColours[prediction], opacity: props.opacity }}
       />
     );
   });
 
   return (
-    <div>
-      <svg width={w} height={h}>
-        <g transform={`translate(${margin.left},${margin.top}) `}>
-          <AxisLeft yScale={yScale} domain={yDomain} range={[height, 0]} />
+    <ScatterContainer ref={ref}>
+      <svg
+        ref={svgRef}
+        style={{ border: "1px solid blue" }}
+        width={width}
+        height={height}
+      >
+        <defs>
+          <clipPath id={clipPathId}>
+            <rect // add padding for the clip path
+              x={-clipPathPadding}
+              y={-clipPathPadding}
+              width={boundedWidth + clipPathPadding * 2}
+              height={boundedHeight + clipPathPadding * 2}
+            />
+          </clipPath>
+        </defs>
+        <g
+          clipPath={`url(#${clipPathId})`}
+          transform={`translate(${marginLeft},${marginTop}) `}
+        >
+          <AxisLeft
+            yScale={yScaleLive}
+            xScale={xScaleLive}
+            width={boundedWidth}
+            height={boundedHeight}
+            tickInterval={tickInterval}
+          />
           <AxisBottom
-            xScale={xScale}
-            height={height}
-            domain={xDomain}
-            range={[0, width]}
+            xScale={xScaleLive}
+            yScale={yScaleLive}
+            height={boundedHeight}
+            width={boundedWidth}
+            tickInterval={tickInterval}
           />
           {circles}
         </g>
       </svg>
-    </div>
+    </ScatterContainer>
   );
 };
 

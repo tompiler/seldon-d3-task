@@ -6,16 +6,16 @@ import { csv } from "d3-fetch";
 import { shuffle } from "d3-array";
 import rows from "./data/live.csv";
 import styled from "styled-components";
+import { useChartDimensions } from "./hooks/useChartDimensions";
 
-const Nav = styled("nav")`
-  display: inline-block;
-  height: 100%;
-  padding: 0 0em;
-  width: 100%;
-  background-image: linear-gradient(to right, #5159ff, #405df6, #00ded0);
+const Section = styled("section")`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-flow: column;
 `;
 
-const Container = styled("div")`
+const NavContainer = styled("div")`
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -24,6 +24,40 @@ const Container = styled("div")`
   text-align: left;
   text-decoration: none;
   font-size: 1em;
+`;
+
+const Nav = styled("nav")`
+  padding: 0 0em;
+  background-image: linear-gradient(to right, #5159ff, #405df6, #00ded0);
+  border-bottom: 1px solid black;
+`;
+
+const Main = styled("div")`
+  display: flex;
+  flex: 4;
+  overflow: auto;
+`;
+
+const Controls = styled("div")`
+  display: flex;
+  /* justify-content: flex-start; */
+  /* align-items: center; */
+  width: 20%;
+  height: 100%;
+  border-right: 1px solid black;
+`;
+
+const ChartsContainer = styled("div")`
+  display: flex;
+  flex-flow: column;
+  width: 80%;
+  height: 100%;
+`;
+
+const BrushContainer = styled("div")`
+  width: 100%;
+  height: 14%;
+  border: 1px dashed red;
 `;
 
 const Title = styled("h1")`
@@ -41,7 +75,7 @@ const rowFunc = (d) => {
 const getRandomData = () => {
   const newData = csv(rows, rowFunc).then((rows) => {
     const shuffled = shuffle(rows);
-    const newData = shuffled.slice(0, 50);
+    const newData = shuffled.slice(0, 500);
     // console.log(newData);
     return newData;
     // return rows.slice(0, 5);
@@ -55,26 +89,6 @@ export default function App() {
 
   useEffect(() => {
     getRandomData().then(setData);
-    // setData([
-    //   {
-    //     x: 14.570322,
-    //     y: -10.469496,
-    //     prediction: "bag",
-    //     timestamp: "05-09-2021 23:41:05.694446",
-    //   },
-    //   {
-    //     x: 15.7093115,
-    //     y: 10.980132,
-    //     prediction: "sneaker",
-    //     timestamp: "07-09-2021 17:10:38.483584",
-    //   },
-    //   {
-    //     x: 15.6710205,
-    //     y: -9.053257,
-    //     prediction: "bag",
-    //     timestamp: "03-09-2021 07:45:21.961154",
-    //   },
-    // ]);
     return () => undefined;
   }, []);
 
@@ -85,26 +99,6 @@ export default function App() {
 
   function handleClick(e) {
     getRandomData().then(setData);
-    // setData([
-    //   {
-    //     x: 16.51299,
-    //     y: 11.967254,
-    //     prediction: "sneaker",
-    //     timestamp: "07-09-2021 00:46:02.208671",
-    //   },
-    //   {
-    //     x: 7.1073494,
-    //     y: -7.025962,
-    //     prediction: "pullover",
-    //     timestamp: "03-09-2021 09:59:21.601728",
-    //   },
-    //   {
-    //     x: 8.1568,
-    //     y: -4.590148,
-    //     prediction: "pullover",
-    //     timestamp: "03-09-2021 05:41:28.822777",
-    //   },
-    // ]);
     if (open) {
       toggle(false);
     } else {
@@ -112,17 +106,23 @@ export default function App() {
     }
   }
 
-  // console.log("NewData:", data);
-
   return (
     <div className="App">
-      <Nav>
-        <Container>
-          <Title>Seldon</Title>
-          <RefreshButton onClick={handleClick}>Refresh data </RefreshButton>
-        </Container>
-      </Nav>
-      <Scatter data={data} open={open} />
+      <Section>
+        <Nav>
+          <NavContainer>
+            <Title>Seldon</Title>
+            <RefreshButton onClick={handleClick}>Refresh data </RefreshButton>
+          </NavContainer>
+        </Nav>
+        <Main>
+          <Controls></Controls>
+          <ChartsContainer>
+            <Scatter data={data} open={open} />
+            <BrushContainer />
+          </ChartsContainer>
+        </Main>
+      </Section>
     </div>
   );
 }
