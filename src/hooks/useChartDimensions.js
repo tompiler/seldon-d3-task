@@ -2,25 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { ResizeObserver } from "@juggle/resize-observer";
 
 const combineChartDimensions = (dimensions) => {
-  const parsedDimensions = {
-    ...dimensions,
-    marginTop: dimensions.marginTop || 30,
-    marginRight: dimensions.marginRight || 150,
-    marginBottom: dimensions.marginBottom || 30,
-    marginLeft: dimensions.marginLeft || 150,
-  };
   return {
-    ...parsedDimensions,
+    ...dimensions,
     boundedHeight: Math.max(
-      parsedDimensions.height -
-        parsedDimensions.marginTop -
-        parsedDimensions.marginBottom,
+      dimensions.height - dimensions.marginTop - dimensions.marginBottom,
       0
     ),
     boundedWidth: Math.max(
-      parsedDimensions.width -
-        parsedDimensions.marginLeft -
-        parsedDimensions.marginRight,
+      dimensions.width - dimensions.marginLeft - dimensions.marginRight,
       0
     ),
   };

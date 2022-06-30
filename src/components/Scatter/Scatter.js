@@ -7,17 +7,21 @@ import AxisBottom from "./AxisBottom/AxisBottom";
 import { extent, max } from "d3-array";
 import { select } from "d3-selection";
 import { zoom, zoomTransform, zoomIdentity } from "d3-zoom";
-import { useChartDimensions } from "../hooks/useChartDimensions";
+import { useChartDimensions } from "../../hooks/useChartDimensions";
 
 const ScatterContainer = styled("div")`
   width: 100%;
-  height: 86%;
+  height: 70%;
   border: 1px dashed blue;
 `;
 
-const Scatter = ({ data, open }) => {
+const Scatter = ({ data, open, selection }) => {
   const svgRef = useRef();
   const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
+  console.log("Scatter selection", selection);
+  const filtered = data.filter((d) => {
+    return d.timestamp >= selection[0] && d.timestamp <= selection[1];
+  });
 
   const props = useSpring({
     from: { r: 0, fill: "lightblue", opacity: 0.2 },
@@ -41,7 +45,14 @@ const Scatter = ({ data, open }) => {
     bag: "#64b5cd",
   };
 
-  const [ref, dimensions] = useChartDimensions({});
+  const margins = {
+    marginTop: 30,
+    marginRight: 150,
+    marginBottom: 30,
+    marginLeft: 150,
+  };
+
+  const [ref, dimensions] = useChartDimensions(margins);
 
   const { width, height, boundedWidth, boundedHeight, marginTop, marginLeft } =
     dimensions;
@@ -51,10 +62,10 @@ const Scatter = ({ data, open }) => {
 
   // We need to create two yScales and two xScales
   // to manage a 'clean' extent to center the chart on 0
-  const xDomain = extent(data, (d) => d.x);
+  const xDomain = extent(filtered, (d) => d.x);
   const xScale = scaleLinear().domain(xDomain).range([0, boundedWidth]).nice();
 
-  const yDomain = extent(data, (d) => d.y);
+  const yDomain = extent(filtered, (d) => d.y);
   const yScale = scaleLinear().domain(yDomain).range([boundedHeight, 0]).nice();
 
   const xMax = max(xScale.domain().map((d) => Math.abs(d)));
@@ -87,11 +98,11 @@ const Scatter = ({ data, open }) => {
       });
 
     svg.call(zoomBehaviour);
-  }, [currentZoomState, data]);
+  }, [currentZoomState]);
 
   const tickInterval = currentZoomState.k >= 2.5 ? 2 : 5;
 
-  const circles = data.map((d, i) => {
+  const circles = filtered.map((d, i) => {
     const prediction = d.prediction.replace("-", "_").replace(" ", "_");
     return (
       <animated.circle

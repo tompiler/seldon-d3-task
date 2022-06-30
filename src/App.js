@@ -1,12 +1,15 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
-import Scatter from "./components/Scatter";
+import Scatter from "./components/Scatter/Scatter";
+import Brush from "./components/Brush/Brush";
 import RefreshButton from "./components/RefreshButton";
 import { csv } from "d3-fetch";
 import { shuffle } from "d3-array";
+import { timeParse } from "d3-time-format";
 import rows from "./data/live.csv";
 import styled from "styled-components";
-import { useChartDimensions } from "./hooks/useChartDimensions";
+import { flatRollup, ascending } from "d3-array";
+import { timeHour } from "d3-time";
 
 const Section = styled("section")`
   width: 100vw;
@@ -40,8 +43,6 @@ const Main = styled("div")`
 
 const Controls = styled("div")`
   display: flex;
-  /* justify-content: flex-start; */
-  /* align-items: center; */
   width: 20%;
   height: 100%;
   border-right: 1px solid black;
@@ -52,12 +53,6 @@ const ChartsContainer = styled("div")`
   flex-flow: column;
   width: 80%;
   height: 100%;
-`;
-
-const BrushContainer = styled("div")`
-  width: 100%;
-  height: 14%;
-  border: 1px dashed red;
 `;
 
 const Title = styled("h1")`
@@ -72,23 +67,54 @@ const rowFunc = (d) => {
   return d;
 };
 
-const getRandomData = () => {
-  const newData = csv(rows, rowFunc).then((rows) => {
-    const shuffled = shuffle(rows);
-    const newData = shuffled.slice(0, 500);
-    // console.log(newData);
-    return newData;
-    // return rows.slice(0, 5);
+const getData = () => {
+  const parseTime = timeParse("%d-%m-%Y %H:%M:%S.%f");
+  const data = csv(rows, rowFunc).then((rows) => {
+    rows.forEach((row) => {
+      row.timestamp = parseTime(row.timestamp);
+    });
+    return rows;
   });
-  return newData;
+  return data;
+};
+
+const getRandomData = (data, nRows) => {
+  const shuffled = shuffle(data);
+  const randomRows = shuffled.slice(0, nRows);
+  return randomRows;
+};
+
+const getGroupData = (data) => {
+  const groupedData = flatRollup(
+    data,
+    (v) => v.length,
+    (d) => timeHour(d.timestamp)
+  );
+  const renamed = groupedData.map(([Date, Count]) => ({ Date, Count }));
+
+  renamed.sort((a, b) => {
+    return ascending(a.Date, b.Date);
+  });
+
+  return renamed;
 };
 
 export default function App() {
   const [data, setData] = useState(null);
+  const [groupedData, setGroupedData] = useState(null);
   const [open, toggle] = useState(false);
+  const [selection, setSelection] = useState([]);
 
   useEffect(() => {
-    getRandomData().then(setData);
+    getData()
+      .then((data) => {
+        setData(() => data);
+        return data;
+      })
+      .then((data) => {
+        const grouped = getGroupData(data);
+        setGroupedData(() => grouped);
+      });
     return () => undefined;
   }, []);
 
@@ -98,7 +124,16 @@ export default function App() {
   }
 
   function handleClick(e) {
-    getRandomData().then(setData);
+    getData()
+      .then((data) => {
+        const randomRows = getRandomData(data, 100);
+        setData(randomRows);
+        return data;
+      })
+      .then((data) => {
+        const grouped = getGroupData(data);
+        setGroupedData(grouped);
+      });
     if (open) {
       toggle(false);
     } else {
@@ -118,8 +153,12 @@ export default function App() {
         <Main>
           <Controls></Controls>
           <ChartsContainer>
-            <Scatter data={data} open={open} />
-            <BrushContainer />
+            <Scatter data={data} open={open} selection={selection} />
+            <Brush
+              data={groupedData}
+              selection={selection}
+              setSelection={setSelection}
+            />
           </ChartsContainer>
         </Main>
       </Section>
