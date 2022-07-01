@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Scatter from "./components/Scatter/Scatter";
 import Brush from "./components/Brush/Brush";
 import RefreshButton from "./components/RefreshButton";
+import ControlPanel from "./components/ControlPanel/ControlPanel";
 import { csv } from "d3-fetch";
 import { shuffle } from "d3-array";
 import { timeParse } from "d3-time-format";
@@ -151,7 +152,9 @@ export default function App() {
           </NavContainer>
         </Nav>
         <Main>
-          <Controls></Controls>
+          <Controls>
+            <ControlPanel selection={selection} setSelection={setSelection} />
+          </Controls>
           <ChartsContainer>
             <Scatter data={data} open={open} selection={selection} />
             <Brush

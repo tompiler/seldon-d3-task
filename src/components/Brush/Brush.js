@@ -19,6 +19,7 @@ const BrushContainer = styled("div")`
 `;
 
 const scaleBandInvert = (scale) => {
+  // Not very precise but passable for band scales...
   var domain = scale.domain();
   var paddingOuter = scale(domain[0]);
   var eachBand = scale.step();
@@ -44,16 +45,18 @@ const Brush = ({ data, selection, setSelection }) => {
     dimensions;
 
   const xExtent = extent(data, (d) => d.Date);
-  const xDomain = timeHour.range(xExtent[0], timeHour.offset(xExtent[1], 1));
+  const xDomain = timeHour.range(xExtent[0], timeHour.offset(xExtent[1], 2));
 
   const previousSelection = usePrevious(selection);
-
+  const maxBrushSizeHours = 8;
   useEffect(() => {
-    setSelection(() => [xDomain[0], xDomain[6]]);
+    // Sets the initial selection - unsure if this is needed here
+    setSelection(() => [xDomain[0], xDomain[maxBrushSizeHours]]);
   }, []);
 
   const paddingOuter = 2;
   const paddingInner = 0.2;
+
   const xScale = scaleBand()
     .domain(xDomain)
     .range([0, boundedWidth])
@@ -65,19 +68,23 @@ const Brush = ({ data, selection, setSelection }) => {
 
   const bandWidth = xScale.bandwidth();
 
-  const xBrushScale = scaleTime().domain(xExtent).range([0, boundedWidth]);
-
   useEffect(() => {
+    // Defines the behaviour of the brush when the brush itself is moved
     const svg = select(svgRef.current);
 
-    const maxBrushSize = 50;
+    // Maximum width of Brush - so as to not overload chart with svg elements
+    const maxBrushSize =
+      (xScale.paddingInner() + xScale.step()) * maxBrushSizeHours;
     let ps = [];
+
     const brush = brushX()
       .extent([
-        [0, 0],
-        [boundedWidth, boundedHeight],
+        [xScale(xExtent[0]), 0],
+        [boundedWidth - xScale(xExtent[0]), boundedHeight],
       ])
       .on("start brush end", (event) => {
+        if (!event.sourceEvent) return; // don't process events which don't come from interaction with the brush
+
         var s = event.selection;
         const indexSelection = event.selection.map(scaleBandInvert(xScale));
         if (event.type === "start") {
@@ -85,9 +92,10 @@ const Brush = ({ data, selection, setSelection }) => {
         } else if (event.type === "end" || event.type === "brush") {
           const selectionTooBig = s[1] - s[0] > maxBrushSize;
           const movedRight = ps[1] <= s[1];
-          const movedLeft = ps[0] >= s[0];
+          const movedLeft = ps[0] > s[0];
           const movedBoth = ps[0] !== s[0] && ps[1] !== s[1];
           if ((movedBoth || movedLeft || movedRight) && !selectionTooBig) {
+            console.log(indexSelection);
             setSelection(() => indexSelection);
           } else if (selectionTooBig && movedLeft) {
             // truncate the brush size if too wide a range is selected
@@ -109,6 +117,9 @@ const Brush = ({ data, selection, setSelection }) => {
         }
       });
 
+    if (previousSelection !== selection && previousSelection !== undefined) {
+      svg.select(".brush").call(brush).call(brush.move, selection.map(xScale));
+    }
     if (previousSelection === selection) {
       svg.select(".brush").call(brush).call(brush.move, selection.map(xScale));
     }
@@ -119,7 +130,6 @@ const Brush = ({ data, selection, setSelection }) => {
     setSelection,
     boundedWidth,
     boundedHeight,
-    xBrushScale,
     previousSelection,
     xScale,
   ]);

@@ -18,7 +18,7 @@ const ScatterContainer = styled("div")`
 const Scatter = ({ data, open, selection }) => {
   const svgRef = useRef();
   const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
-  console.log("Scatter selection", selection);
+  // console.log("Scatter selection", selection);
   const filtered = data.filter((d) => {
     return d.timestamp >= selection[0] && d.timestamp <= selection[1];
   });
