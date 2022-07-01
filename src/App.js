@@ -44,15 +44,16 @@ const Main = styled("div")`
 
 const Controls = styled("div")`
   display: flex;
-  width: 20%;
+  width: 25%;
   height: 100%;
   border-right: 1px solid black;
+  background-color: rgba(0, 0, 0, 0);
 `;
 
 const ChartsContainer = styled("div")`
   display: flex;
   flex-flow: column;
-  width: 80%;
+  width: 75%;
   height: 100%;
 `;
 

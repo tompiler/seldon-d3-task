@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { animated, useTransition, to, config } from "react-spring";
+import React from "react";
+import { animated, useTransition, to } from "react-spring";
 
-const TicksLeft = ({ ticks, yScale, height }) => {
+const TicksLeft = ({ ticks, yScale, height, color }) => {
   const transitions = useTransition(ticks, {
     from: ({ value }) => {
       return { yOffset: yScale(value), opacity: 0 };
@@ -28,7 +28,7 @@ const TicksLeft = ({ ticks, yScale, height }) => {
           transform: to(styles.yOffset, (y) => `translate3d(0, ${y}px, 0)`),
         }}
       >
-        <animated.line x1={height + -6} x2={height + 0} stroke="currentColor" />
+        <animated.line x1={height + -6} x2={height + 0} stroke={color} />
         <animated.text
           x={height - 10}
           y={item.value === 0 ? 10 : 0}
@@ -38,6 +38,8 @@ const TicksLeft = ({ ticks, yScale, height }) => {
             verticalAlign: "text-bottom",
             textAnchor: "end",
             transform: "translate(0px)",
+            fill: color,
+            strokeWidth: 0,
           }}
         >
           {item.value}

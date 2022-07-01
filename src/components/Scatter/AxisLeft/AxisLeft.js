@@ -19,6 +19,7 @@ const AxisLeft = ({ yScale, xScale, height, width, tickInterval }) => {
     }));
   }, [yScale, domain, height, tickInterval]);
 
+  const color = "rgb(60,60,60)";
   // When the chart pans to the point where the axis is out of
   // bounds, truncate the position so that it stays within view
   // and the tick labels are visible
@@ -26,6 +27,7 @@ const AxisLeft = ({ yScale, xScale, height, width, tickInterval }) => {
   return (
     <svg style={{ overflow: "visible" }}>
       <path
+        stroke={color}
         d={[
           "M",
           truncatedXPos,
@@ -36,9 +38,13 @@ const AxisLeft = ({ yScale, xScale, height, width, tickInterval }) => {
           truncatedXPos,
         ].join(" ")}
         fill="none"
-        stroke="currentColor"
       />
-      <TicksLeft ticks={ticks} yScale={yScale} height={truncatedXPos} />
+      <TicksLeft
+        ticks={ticks}
+        yScale={yScale}
+        height={truncatedXPos}
+        color={color}
+      />
     </svg>
   );
 };

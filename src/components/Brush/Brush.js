@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 
-import { scaleLinear, scaleBand, scaleTime } from "d3-scale";
+import { scaleLinear, scaleBand } from "d3-scale";
 import AxisLeft from "../Brush/AxisLeft";
 import AxisBottom from "../Brush/AxisBottom";
-import { extent } from "d3-array";
+import { extent, max } from "d3-array";
 import { select } from "d3-selection";
 import { useChartDimensions } from "../../hooks/useChartDimensions";
 import { usePrevious } from "../../hooks/usePrevious";
@@ -63,8 +63,8 @@ const Brush = ({ data, selection, setSelection }) => {
     .paddingInner(paddingInner)
     .paddingOuter(paddingOuter);
 
-  const yDomain = extent(data, (d) => d.Count);
-  const yScale = scaleLinear().domain(yDomain).range([boundedHeight, 0]);
+  const yMax = max(data, (d) => d.Count);
+  const yScale = scaleLinear().domain([0, yMax]).range([boundedHeight, 0]);
 
   const bandWidth = xScale.bandwidth();
 
