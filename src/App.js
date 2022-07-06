@@ -7,7 +7,8 @@ import ControlPanel from "./components/ControlPanel/ControlPanel";
 import { csv } from "d3-fetch";
 import { shuffle } from "d3-array";
 import { timeParse } from "d3-time-format";
-import rows from "./data/live.csv";
+import liveData from "./data/live.csv";
+import referenceData from "./data/reference.csv";
 import styled from "styled-components";
 import { flatRollup, ascending } from "d3-array";
 import { timeHour } from "d3-time";
@@ -33,7 +34,6 @@ const NavContainer = styled("div")`
 const Nav = styled("nav")`
   padding: 0 0em;
   background-image: linear-gradient(to right, #5159ff, #405df6, #00ded0);
-  border-bottom: 1px solid black;
 `;
 
 const Main = styled("div")`
@@ -46,7 +46,6 @@ const Controls = styled("div")`
   display: flex;
   width: 25%;
   height: 100%;
-  border-right: 1px solid black;
   background-color: rgba(0, 0, 0, 0);
 `;
 
@@ -69,8 +68,10 @@ const rowFunc = (d) => {
   return d;
 };
 
-const getData = () => {
+const getData = (source) => {
   const parseTime = timeParse("%d-%m-%Y %H:%M:%S.%f");
+  const rows = source === "live" ? liveData : referenceData;
+  console.log(source, source === "live");
   const data = csv(rows, rowFunc).then((rows) => {
     rows.forEach((row) => {
       row.timestamp = parseTime(row.timestamp);
@@ -80,8 +81,9 @@ const getData = () => {
   return data;
 };
 
-const getRandomData = (data, nRows) => {
+const getRandomData = (data, samplePercentage) => {
   const shuffled = shuffle(data);
+  const nRows = Math.ceil((data.length * samplePercentage) / 100);
   const randomRows = shuffled.slice(0, nRows);
   return randomRows;
 };
@@ -106,12 +108,17 @@ export default function App() {
   const [groupedData, setGroupedData] = useState(null);
   const [open, toggle] = useState(false);
   const [selection, setSelection] = useState([]);
+  const [source, setSource] = useState("live");
+  const [unappliedChanges, setUnappliedChanges] = useState(false);
+  const [randomSampleSizePercent, setRandomSampleSizePercent] = useState(20);
 
   useEffect(() => {
-    getData()
+    getData(source)
       .then((data) => {
-        setData(() => data);
-        return data;
+        const randomRows = getRandomData(data, randomSampleSizePercent);
+        setData(() => randomRows);
+
+        return randomRows;
       })
       .then((data) => {
         const grouped = getGroupData(data);
@@ -125,12 +132,12 @@ export default function App() {
     return <pre>Loading...</pre>;
   }
 
-  function handleClick(e) {
-    getData()
+  function refreshData(e) {
+    getData(source)
       .then((data) => {
-        const randomRows = getRandomData(data, 100);
-        setData(randomRows);
-        return data;
+        const randomRows = getRandomData(data, randomSampleSizePercent);
+        setData(() => randomRows);
+        return randomRows;
       })
       .then((data) => {
         const grouped = getGroupData(data);
@@ -143,26 +150,56 @@ export default function App() {
     }
   }
 
+  const resample = () => {
+    getData(source)
+      .then((data) => {
+        console.log(data);
+        const randomRows = getRandomData(data, randomSampleSizePercent);
+        setData(() => randomRows);
+        return randomRows;
+      })
+      .then((data) => {
+        const grouped = getGroupData(data);
+        setGroupedData(grouped);
+      });
+  };
+
   return (
     <div className="App">
       <Section>
         <Nav>
           <NavContainer>
             <Title>Seldon</Title>
-            <RefreshButton onClick={handleClick}>Refresh data </RefreshButton>
           </NavContainer>
         </Nav>
         <Main>
           <Controls>
-            <ControlPanel selection={selection} setSelection={setSelection} />
-          </Controls>
-          <ChartsContainer>
-            <Scatter data={data} open={open} selection={selection} />
-            <Brush
-              data={groupedData}
+            <ControlPanel
               selection={selection}
               setSelection={setSelection}
+              sampleSize={randomSampleSizePercent}
+              setSampleSize={setRandomSampleSizePercent}
+              resample={resample}
+              source={source}
+              setSource={setSource}
+              setUnappliedChanges={setUnappliedChanges}
             />
+          </Controls>
+          <ChartsContainer>
+            <Scatter
+              data={data}
+              source={source}
+              open={open}
+              selection={selection}
+            />
+            {((source === "live" && !unappliedChanges) ||
+              (source === "reference" && !unappliedChanges)) && (
+              <Brush
+                data={groupedData}
+                selection={selection}
+                setSelection={setSelection}
+              />
+            )}
           </ChartsContainer>
         </Main>
       </Section>

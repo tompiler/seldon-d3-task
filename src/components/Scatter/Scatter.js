@@ -12,15 +12,18 @@ import { useChartDimensions } from "../../hooks/useChartDimensions";
 const ScatterContainer = styled("div")`
   width: 100%;
   height: 70%;
-  border: 1px dashed blue;
 `;
 
-const Scatter = ({ data, open, selection }) => {
+const Scatter = ({ data, source, open, selection }) => {
   const svgRef = useRef();
   const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
   // console.log("Scatter selection", selection);
   const filtered = data.filter((d) => {
-    return d.timestamp >= selection[0] && d.timestamp <= selection[1];
+    if (source === "live") {
+      return d.timestamp >= selection[0] && d.timestamp <= selection[1];
+    } else {
+      return data;
+    }
   });
 
   const props = useSpring({
@@ -62,10 +65,10 @@ const Scatter = ({ data, open, selection }) => {
 
   // We need to create two yScales and two xScales
   // to manage a 'clean' extent to center the chart on 0
-  const xDomain = extent(filtered, (d) => d.x);
+  const xDomain = extent(data, (d) => d.x);
   const xScale = scaleLinear().domain(xDomain).range([0, boundedWidth]).nice();
 
-  const yDomain = extent(filtered, (d) => d.y);
+  const yDomain = extent(data, (d) => d.y);
   const yScale = scaleLinear().domain(yDomain).range([boundedHeight, 0]).nice();
 
   const xMax = max(xScale.domain().map((d) => Math.abs(d)));
@@ -117,12 +120,7 @@ const Scatter = ({ data, open, selection }) => {
 
   return (
     <ScatterContainer ref={ref}>
-      <svg
-        ref={svgRef}
-        style={{ border: "1px solid blue" }}
-        width={width}
-        height={height}
-      >
+      <svg ref={svgRef} width={width} height={height}>
         <defs>
           <clipPath id={clipPathId}>
             <rect // add padding for the clip path

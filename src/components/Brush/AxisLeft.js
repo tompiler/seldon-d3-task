@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 
-const AxisLeft = ({ yScale, height, tickInterval }) => {
+const AxisLeft = ({ yScale, height, tickInterval, color }) => {
   const domain = yScale.domain();
   const range = yScale.range();
 
@@ -17,7 +17,6 @@ const AxisLeft = ({ yScale, height, tickInterval }) => {
     }));
   }, [yScale, domain, height, tickInterval]);
 
-  const color = "rgb(60,60,60)";
   // When the chart pans to the point where the axis is out of
   // bounds, truncate the position so that it stays within view
   // and the tick labels are visible
@@ -53,6 +52,33 @@ const AxisLeft = ({ yScale, height, tickInterval }) => {
           </g>
         );
       })}
+      <g transform={`translate(${-40},${120}) `}>
+        <text
+          style={{
+            fontSize: "12px",
+            verticalAlign: "text-bottom",
+            textAnchor: "end",
+            fill: color,
+            strokeWidth: 0,
+            transform: "rotate(0.75turn)",
+          }}
+        >
+          Total
+        </text>
+        <text
+          x={5}
+          style={{
+            fontSize: "12px",
+            verticalAlign: "text-bottom",
+            // textAnchor: "end",
+            fill: color,
+            strokeWidth: 0,
+            transform: "rotate(0.75turn)",
+          }}
+        >
+          Observations
+        </text>
+      </g>
     </svg>
   );
 };

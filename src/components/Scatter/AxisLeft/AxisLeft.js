@@ -39,6 +39,20 @@ const AxisLeft = ({ yScale, xScale, height, width, tickInterval }) => {
         ].join(" ")}
         fill="none"
       />
+      <g transform={`translate(${xScale(0) + 15},0) `}>
+        <text
+          style={{
+            fontSize: "12px",
+            verticalAlign: "text-bottom",
+            textAnchor: "end",
+            fill: color,
+            strokeWidth: 0,
+            transform: "rotate(0.75turn)",
+          }}
+        >
+          {"← 𝑦 →"}
+        </text>
+      </g>
       <TicksLeft
         ticks={ticks}
         yScale={yScale}

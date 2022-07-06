@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { scaleLinear, scaleBand } from "d3-scale";
 import AxisLeft from "../Brush/AxisLeft";
 import AxisBottom from "../Brush/AxisBottom";
-import { extent, max } from "d3-array";
+import { extent, max, min, sum } from "d3-array";
 import { select } from "d3-selection";
 import { useChartDimensions } from "../../hooks/useChartDimensions";
 import { usePrevious } from "../../hooks/usePrevious";
@@ -15,7 +15,6 @@ import { brushX } from "d3-brush";
 const BrushContainer = styled("div")`
   width: 100%;
   height: 30%;
-  border: 1px dashed blue;
 `;
 
 const scaleBandInvert = (scale) => {
@@ -95,7 +94,6 @@ const Brush = ({ data, selection, setSelection }) => {
           const movedLeft = ps[0] > s[0];
           const movedBoth = ps[0] !== s[0] && ps[1] !== s[1];
           if ((movedBoth || movedLeft || movedRight) && !selectionTooBig) {
-            console.log(indexSelection);
             setSelection(() => indexSelection);
           } else if (selectionTooBig && movedLeft) {
             // truncate the brush size if too wide a range is selected
@@ -134,6 +132,8 @@ const Brush = ({ data, selection, setSelection }) => {
     xScale,
   ]);
 
+  const color = "rgb(60,60,60)";
+
   const bars = data.map((d, i) => {
     return (
       <rect
@@ -149,15 +149,18 @@ const Brush = ({ data, selection, setSelection }) => {
 
   return (
     <BrushContainer ref={ref}>
-      <svg
-        ref={svgRef}
-        style={{ border: "1px solid green" }}
-        width={width}
-        height={height}
-      >
+      <svg ref={svgRef} width={width} height={height}>
         <g transform={`translate(${marginLeft},${marginTop}) `}>
-          <AxisBottom xScale={xScale} height={boundedHeight} />
-          <AxisLeft yScale={yScale} height={boundedHeight} tickInterval={50} />
+          <AxisBottom xScale={xScale} height={boundedHeight} color={color} />
+          <AxisLeft
+            yScale={yScale}
+            height={boundedHeight}
+            tickInterval={Math.max(
+              5,
+              Math.min(50, sum(data, (d) => d.Count) / 1000)
+            )}
+            color={color}
+          />
           {bars}
         </g>
         <g

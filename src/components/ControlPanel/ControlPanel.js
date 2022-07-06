@@ -10,32 +10,67 @@ const Container = styled.div`
   margin: 1vw 1vh;
 `;
 
+const OptionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  background-color: rgb(225, 235, 255);
+  border-radius: 3px;
+  padding: 1vh 0.4vw;
+`;
+
 const ObservationTime = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 80%;
-  font-size: 1.2em;
+  font-size: 1em;
   font-family: "Helvetica";
-  background-color: rgb(240, 240, 240);
-  border-radius: 10px;
-  border: 2px solid rgb(140, 140, 140);
+  background-color: rgb(225, 235, 255);
+  border-radius: 3px;
   padding: 1vh 0.4vw;
 `;
 
-const Title = styled.div`
-  margin: 1vh 0 2vh 0;
-  border-bottom: 1px solid rgb(10, 10, 10);
+const SampleSize = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  font-size: 1em;
+  font-family: "Helvetica";
+  background-color: rgb(225, 235, 255);
+  border-radius: 3px;
+  padding: 1vh 0.4vw;
 `;
 
-const DateRangeButton = styled.button`
+const DataSource = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: 80%;
+  font-size: 1em;
+  font-family: "Helvetica";
+  background-color: rgb(225, 235, 255);
+  border-radius: 3px;
+  padding: 1vh 0 0 0;
+`;
+
+const Title = styled.div`
+  margin: 2vh 0 1vh 0;
+  border-bottom: 1px solid rgb(10, 10, 10);
+  font-size: 1.1em;
+`;
+
+const ApplyButton = styled.button`
   display: inline-block;
   width: 60%;
   height: 100%;
-  margin: 1vh 0 0 0;
+  margin: 3vh 0 0 0;
   font-size: 1.2em;
   font-weight: 400;
-  font-family: "Arial";
+  font-family: Helvetica;
   text-align: center;
   background-color: #405df6;
   color: black;
@@ -44,12 +79,38 @@ const DateRangeButton = styled.button`
   border-radius: 4px;
   border: none;
   padding: 10px;
-  background-color: rgba(200, 200, 200, 0.4);
+  background-color: rgb(190, 200, 240);
   transition: 0.3s all;
-
   &:hover {
     background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const DataSourceButton = styled.button`
+  display: inline-block;
+  height: 100%;
+  font-size: 1em;
+  font-weight: 400;
+  font-family: Helvetica;
+  text-align: center;
+  background-color: #405df6;
+  color: black;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 4px;
+  border: none;
+  padding: 10px;
+  /* background-color: rgb(190, 200, 240); */
+  transition: 0.3s all;
+
+  background-color: ${(props) =>
+    props.selected ? "palevioletred" : "rgb(190, 200, 240)"};
+
+  &:hover {
+    /* background-color: rgba(255, 255, 255, 0.9); */
+    /* opacity: 0.5; */
+    box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -95,7 +156,16 @@ const FieldTitle = styled.div`
   font-size: 14px;
 `;
 
-const ControlPanel = ({ selection, setSelection }) => {
+const ControlPanel = ({
+  selection,
+  setSelection,
+  sampleSize,
+  setSampleSize,
+  resample,
+  source,
+  setSource,
+  setUnappliedChanges,
+}) => {
   const parseTime = timeParse("%Y-%m-%d %H:%M");
   const formatTime = timeFormat("%Y-%m-%d %H:%M");
 
@@ -105,16 +175,41 @@ const ControlPanel = ({ selection, setSelection }) => {
   const [startEdit, setStartEdit] = useState(false);
   const [endEdit, setEndEdit] = useState(false);
 
+  useEffect(() => {
+    setStartDate(() => "2021-09-03 00:00");
+    setEndDate(() => "2021-09-03 08:00");
+    setSelection(() => [
+      parseTime("2021-09-03 00:00"),
+      parseTime("2021-09-03 08:00"),
+    ]);
+  }, []);
+
   if (selection[0] === undefined) {
     return;
   }
 
-  const handleClick = () => {
+  const applyControls = () => {
     const formatStartDate = parseTime(startDate);
     const formatEndDate = parseTime(endDate);
     setStartEdit(false);
     setEndEdit(false);
-    setSelection(() => [formatStartDate, formatEndDate]);
+    setUnappliedChanges(false);
+    resample();
+    // Don't apply the date range in the control
+    // panel if the inputs have not been edited
+    console.log("this did work... right?");
+    if (startEdit !== endEdit && startEdit) {
+      console.log(" && startEdit");
+      setSelection(() => [formatStartDate, selection[1]]);
+    } else if (startEdit !== endEdit && endEdit) {
+      console.log(" && endEdit");
+      setSelection(() => [selection[0], formatEndDate]);
+    } else if (!startEdit && !endEdit) {
+      console.log("joni is the cutest");
+      setSelection(() => [selection[0], selection[1]]);
+    } else {
+      setSelection(() => [formatStartDate, formatEndDate]);
+    }
   };
 
   const startValue = startEdit ? startDate : formatTime(selection[0]);
@@ -122,35 +217,70 @@ const ControlPanel = ({ selection, setSelection }) => {
 
   return (
     <Container>
-      <ObservationTime>
-        <Title>Observation Time</Title>
-        <FieldTitle>Start Timestamp:</FieldTitle>
-        <Field>
-          <Input
-            onFocus={() => {
-              console.log("Focus: true");
-              setStartEdit(true);
-              setStartDate(formatTime(selection[0]));
+      <OptionContainer>
+        <ObservationTime>
+          <Title>Observation Time</Title>
+          <FieldTitle>Start Timestamp:</FieldTitle>
+          <Field>
+            <Input
+              onFocus={() => {
+                console.log("Focus: true");
+                setStartEdit(true);
+                setStartDate(formatTime(selection[0]));
+              }}
+              type="text"
+              value={startValue}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </Field>
+          <FieldTitle>End timestamp:</FieldTitle>
+          <Field>
+            <Input
+              onFocus={() => {
+                setEndEdit(true);
+                setEndDate(formatTime(selection[1]));
+              }}
+              type="text"
+              value={endValue}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </Field>
+        </ObservationTime>
+        <SampleSize>
+          <Title>Sample Size</Title>
+          <Field>
+            <Input
+              type="text"
+              value={sampleSize}
+              onChange={(e) => setSampleSize(e.target.value)}
+            />
+            %
+          </Field>
+        </SampleSize>
+
+        <Title>Data Source</Title>
+        <DataSource>
+          <DataSourceButton
+            selected={source === "reference"}
+            onClick={() => {
+              setUnappliedChanges(true);
+              setSource("reference");
             }}
-            type="text"
-            value={startValue}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </Field>
-        <FieldTitle>End timestamp:</FieldTitle>
-        <Field>
-          <Input
-            onFocus={() => {
-              setEndEdit(true);
-              setEndDate(formatTime(selection[1]));
+          >
+            Reference
+          </DataSourceButton>
+          <DataSourceButton
+            selected={source === "live"}
+            onClick={() => {
+              setUnappliedChanges(true);
+              setSource("live");
             }}
-            type="text"
-            value={endValue}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </Field>
-        <DateRangeButton onClick={handleClick}>Apply</DateRangeButton>
-      </ObservationTime>
+          >
+            Live
+          </DataSourceButton>
+        </DataSource>
+        <ApplyButton onClick={applyControls}>Apply</ApplyButton>
+      </OptionContainer>
     </Container>
   );
 };

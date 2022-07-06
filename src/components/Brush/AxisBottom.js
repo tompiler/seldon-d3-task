@@ -2,7 +2,7 @@ import React from "react";
 // import TicksBottom from "./TicksBottom";
 import { timeFormat } from "d3-time-format";
 
-const AxisBottom = ({ xScale, height }) => {
+const AxisBottom = ({ xScale, height, color }) => {
   const domain = xScale.domain();
   const range = xScale.range();
 
@@ -14,7 +14,6 @@ const AxisBottom = ({ xScale, height }) => {
 
   const formatTime = timeFormat("%b %d %Y %H:%M");
 
-  const color = "rgb(60,60,60)";
   const bandWidth = xScale.bandwidth();
   return (
     <svg style={{ overflow: "visible" }}>
@@ -47,6 +46,19 @@ const AxisBottom = ({ xScale, height }) => {
           </g>
         );
       })}
+      <g transform={`translate(${530},${210}) `}>
+        <text
+          style={{
+            fontSize: "12px",
+            verticalAlign: "text-bottom",
+            textAnchor: "end",
+            fill: color,
+            strokeWidth: 0,
+          }}
+        >
+          Timestamp (Hourly Intervals)
+        </text>
+      </g>
     </svg>
   );
 };
