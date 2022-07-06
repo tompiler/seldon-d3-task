@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useContext } from "react";
 import styled from "styled-components";
 
 import { scaleLinear, scaleBand } from "d3-scale";
@@ -8,6 +8,7 @@ import { extent, max, min, sum } from "d3-array";
 import { select } from "d3-selection";
 import { useChartDimensions } from "../../hooks/useChartDimensions";
 import { usePrevious } from "../../hooks/usePrevious";
+import { DashboardContext } from "../../Context";
 
 import { timeHour } from "d3-time";
 import { brushX } from "d3-brush";
@@ -28,13 +29,15 @@ const scaleBandInvert = (scale) => {
   };
 };
 
-const Brush = ({ data, selection, setSelection }) => {
+const Brush = ({ data, selection }) => {
   const margins = {
     marginTop: 20,
     marginRight: 150,
     marginBottom: 50,
     marginLeft: 150,
   };
+
+  const [state, dispatch] = useContext(DashboardContext);
 
   const svgRef = useRef();
   const brushRef = useRef();
@@ -46,12 +49,8 @@ const Brush = ({ data, selection, setSelection }) => {
   const xExtent = extent(data, (d) => d.Date);
   const xDomain = timeHour.range(xExtent[0], timeHour.offset(xExtent[1], 2));
 
-  const previousSelection = usePrevious(selection);
-  const maxBrushSizeHours = 8;
-  useEffect(() => {
-    // Sets the initial selection - unsure if this is needed here
-    setSelection(() => [xDomain[0], xDomain[maxBrushSizeHours]]);
-  }, []);
+  const previousSelection = usePrevious(state.dateRange);
+  const maxBrushSizeHours = 100;
 
   const paddingOuter = 2;
   const paddingInner = 0.2;
@@ -85,7 +84,7 @@ const Brush = ({ data, selection, setSelection }) => {
         if (!event.sourceEvent) return; // don't process events which don't come from interaction with the brush
 
         var s = event.selection;
-        const indexSelection = event.selection.map(scaleBandInvert(xScale));
+        const newDateRange = event.selection.map(scaleBandInvert(xScale));
         if (event.type === "start") {
           ps = event.selection;
         } else if (event.type === "end" || event.type === "brush") {
@@ -94,38 +93,40 @@ const Brush = ({ data, selection, setSelection }) => {
           const movedLeft = ps[0] > s[0];
           const movedBoth = ps[0] !== s[0] && ps[1] !== s[1];
           if ((movedBoth || movedLeft || movedRight) && !selectionTooBig) {
-            setSelection(() => indexSelection);
+            dispatch({ type: "dateRange", payload: newDateRange });
           } else if (selectionTooBig && movedLeft) {
             // truncate the brush size if too wide a range is selected
-            const truncatedSelection = [s[0], s[0] + maxBrushSize];
-            const indexSelection = truncatedSelection.map(
-              scaleBandInvert(xScale)
-            );
-            svg.select(".brush").call(brush.move, truncatedSelection);
-            setSelection(() => indexSelection);
+            const truncatedBounds = [s[0], s[0] + maxBrushSize];
+            const newDateRange = truncatedBounds.map(scaleBandInvert(xScale));
+            svg.select(".brush").call(brush.move, truncatedBounds);
+            dispatch({ type: "dateRange", payload: newDateRange });
           } else if (selectionTooBig && movedRight) {
             // truncate the brush size if too wide a range is selected
-            const truncatedSelection = [s[1] - maxBrushSize, s[1]];
-            const indexSelection = truncatedSelection.map(
-              scaleBandInvert(xScale)
-            );
-            svg.select(".brush").call(brush.move, truncatedSelection);
-            setSelection(() => indexSelection);
+            const truncatedBounds = [s[1] - maxBrushSize, s[1]];
+            const newDateRange = truncatedBounds.map(scaleBandInvert(xScale));
+            svg.select(".brush").call(brush.move, truncatedBounds);
+            dispatch({ type: "dateRange", payload: newDateRange });
           }
         }
       });
 
-    if (previousSelection !== selection && previousSelection !== undefined) {
-      svg.select(".brush").call(brush).call(brush.move, selection.map(xScale));
+    if (previousSelection !== state.dateRange) {
+      svg
+        .select(".brush")
+        .call(brush)
+        .call(brush.move, state.dateRange.map(xScale));
     }
-    if (previousSelection === selection) {
-      svg.select(".brush").call(brush).call(brush.move, selection.map(xScale));
+
+    if (previousSelection === state.dateRange) {
+      svg
+        .select(".brush")
+        .call(brush)
+        .call(brush.move, state.dateRange.map(xScale));
     }
   }, [
     data,
     dimensions,
     selection,
-    setSelection,
     boundedWidth,
     boundedHeight,
     previousSelection,

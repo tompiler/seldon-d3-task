@@ -32,8 +32,8 @@ export const useChartDimensions = (passedSettings) => {
 
       const entry = entries[0];
 
-      if (width != entry.contentRect.width) setWidth(entry.contentRect.width);
-      if (height != entry.contentRect.height)
+      if (width !== entry.contentRect.width) setWidth(entry.contentRect.width);
+      if (height !== entry.contentRect.height)
         setHeight(entry.contentRect.height);
     });
     resizeObserver.observe(element);

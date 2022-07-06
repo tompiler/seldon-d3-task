@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import styled from "styled-components";
 import { useSpring, animated } from "react-spring";
 import { scaleLinear } from "d3-scale";
@@ -8,22 +8,30 @@ import { extent, max } from "d3-array";
 import { select } from "d3-selection";
 import { zoom, zoomTransform, zoomIdentity } from "d3-zoom";
 import { useChartDimensions } from "../../hooks/useChartDimensions";
+import { DashboardContext } from "../../Context";
 
 const ScatterContainer = styled("div")`
   width: 100%;
   height: 70%;
 `;
 
-const Scatter = ({ data, source, open, selection }) => {
+const Scatter = ({ data, source, open }) => {
   const svgRef = useRef();
   const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
-  // console.log("Scatter selection", selection);
+
+  const [state] = useContext(DashboardContext);
+
+  // console.log(data);
   const filtered = data.filter((d) => {
-    if (source === "live") {
-      return d.timestamp >= selection[0] && d.timestamp <= selection[1];
-    } else {
-      return data;
-    }
+    // if (source === "live") {
+    //   return d.timestamp >= selection[0] && d.timestamp <= selection[1];
+    // } else {
+    // return data.filter((d) => {
+    return (
+      d.timestamp >= state.dateRange[0] && d.timestamp <= state.dateRange[1]
+    );
+    // });
+    // }
   });
 
   const props = useSpring({
