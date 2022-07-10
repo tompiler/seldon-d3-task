@@ -4,7 +4,8 @@ import styled from "styled-components";
 import { scaleLinear, scaleBand } from "d3-scale";
 import AxisLeft from "../Brush/AxisLeft";
 import AxisBottom from "../Brush/AxisBottom";
-import { extent, max, min, sum } from "d3-array";
+import { extent, max, sum } from "d3-array";
+import { line, curveCatmullRom } from "d3-shape";
 import { select } from "d3-selection";
 import { useChartDimensions } from "../../hooks/useChartDimensions";
 import { usePrevious } from "../../hooks/usePrevious";
@@ -29,7 +30,7 @@ const scaleBandInvert = (scale) => {
   };
 };
 
-const Brush = ({ data, selection }) => {
+const Brush = ({ data }) => {
   const margins = {
     marginTop: 20,
     marginRight: 150,
@@ -82,7 +83,8 @@ const Brush = ({ data, selection }) => {
       ])
       .on("start brush end", (event) => {
         if (!event.sourceEvent) return; // don't process events which don't come from interaction with the brush
-
+        svg.select(".brush").call(brushHandle, event.selection);
+        console.log(event.selection);
         var s = event.selection;
         const newDateRange = event.selection.map(scaleBandInvert(xScale));
         if (event.type === "start") {
@@ -110,6 +112,51 @@ const Brush = ({ data, selection }) => {
         }
       });
 
+    const points = [
+      [0, 0],
+      [-12, boundedHeight / 2],
+      [0, boundedHeight],
+    ];
+
+    const wrapper = (points, type) => {
+      return line()
+        .x((d, i) => {
+          console.log(d, i, d[0], -d[0], type);
+          return type === 1 ? -d[0] : +d[0];
+        })
+        .y((d) => d[1])
+        .curve(curveCatmullRom.alpha(0.5))(points);
+    };
+
+    const brushHandle = (g, selection) =>
+      g
+        .selectAll(".handle--custom")
+        .data([{ type: "w" }, { type: "e" }])
+        .join((enter) =>
+          enter
+            .append("path")
+            .attr("class", "handle--custom")
+            .style("fill", "rgb(100, 100, 100)")
+            .style("fill-opacity", 1)
+            .attr("cursor", "ew-resize")
+            .attr("d", (_, i) => {
+              return wrapper(points, i);
+            })
+        )
+        .attr("display", selection === null ? "none" : null)
+        .attr(
+          "transform",
+          selection === null ? null : (d, i) => `translate(${selection[i]},0)`
+        );
+
+    if (state.source === "reference") {
+      svg.select(".overlay").style("pointer-events", "none");
+      svg.select(".brush").style("pointer-events", "none");
+    } else {
+      svg.select(".overlay").style("pointer-events", "all");
+      svg.select(".brush").style("pointer-events", "all");
+    }
+
     if (previousSelection !== state.dateRange) {
       svg
         .select(".brush")
@@ -121,12 +168,17 @@ const Brush = ({ data, selection }) => {
       svg
         .select(".brush")
         .call(brush)
-        .call(brush.move, state.dateRange.map(xScale));
+        .call(brush.move, state.dateRange.map(xScale))
+        .call(brushHandle, state.dateRange.map(xScale));
+      svg
+        .select(".selection")
+        .style("stroke", "rgb(50,50,50)")
+        .style("fill", "rgba(10,10,200)")
+        .style("fill-opacity", 0.12);
     }
   }, [
     data,
     dimensions,
-    selection,
     boundedWidth,
     boundedHeight,
     previousSelection,
@@ -143,14 +195,21 @@ const Brush = ({ data, selection }) => {
         y={yScale(d.Count)}
         width={bandWidth}
         height={boundedHeight - yScale(d.Count)}
-        style={{ fill: "rgba(0,70,200,0.5" }}
+        style={{ fill: "rgba(0,70,200,0.5", rx: "2px", ry: "2px" }}
       />
     );
   });
 
   return (
     <BrushContainer ref={ref}>
-      <svg ref={svgRef} width={width} height={height}>
+      <svg
+        ref={svgRef}
+        width={width}
+        height={height}
+        style={{
+          opacity: state.source === "reference" ? 0.6 : 1,
+        }}
+      >
         <g transform={`translate(${marginLeft},${marginTop}) `}>
           <AxisBottom xScale={xScale} height={boundedHeight} color={color} />
           <AxisLeft

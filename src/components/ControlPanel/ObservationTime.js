@@ -8,8 +8,6 @@ const ObservationTimeContainer = styled.div`
   align-items: center;
   width: 80%;
   font-size: 1em;
-  font-family: "Helvetica";
-  background-color: rgb(225, 235, 255);
   border-radius: 3px;
   padding: 1vh 0.4vw;
 `;

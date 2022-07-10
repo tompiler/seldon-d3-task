@@ -33,7 +33,7 @@ const AxisBottom = ({ xScale, yScale, width, height, tickInterval }) => {
         d={["M", range[0], truncatedYPos, "v", 0, "H", range[1]].join(" ")}
         fill="none"
       />
-      <g transform={`translate(${30},${yScale(0) - 10}) `}>
+      <g transform={`translate(${30},${truncatedYPos - 10}) `}>
         <text
           style={{
             fontSize: "12px",

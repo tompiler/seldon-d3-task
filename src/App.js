@@ -71,10 +71,9 @@ const rowFunc = (d) => {
   return d;
 };
 
-const getData = () => {
+const getData = (source) => {
   const parseTime = timeParse("%d-%m-%Y %H:%M:%S.%f");
-  // const rows = source === "live" ? liveData : referenceData;
-  const rows = liveData;
+  const rows = source === "live" ? liveData : referenceData;
   // console.log(source, source === "live");
   const data = csv(rows, rowFunc).then((rows) => {
     rows.forEach((row) => {
@@ -87,7 +86,8 @@ const getData = () => {
 
 const getRandomData = (data, samplePercentage) => {
   const shuffled = shuffle(data);
-  const nRows = Math.ceil((data.length * samplePercentage) / 100);
+  const nRows = Math.ceil(data.length * samplePercentage);
+  // console.log("nRows:", nRows, samplePercentage);
   const randomRows = shuffled.slice(0, nRows);
   return randomRows;
 };
@@ -108,24 +108,47 @@ const getGroupData = (data) => {
 };
 
 export default function App() {
-  const [data, setData] = useState(null);
   const [groupedData, setGroupedData] = useState(null);
   const [open, toggle] = useState(false);
-  const [source, setSource] = useState("live");
-  const [unappliedChanges, setUnappliedChanges] = useState(false);
-  const [randomSampleSizePercent, setRandomSampleSizePercent] = useState(10);
 
   const formatTime = timeFormat("%Y-%m-%d %H:%M");
 
   const [state, dispatch] = useContext(DashboardContext);
 
-  useEffect(() => {
-    console.log("...really loading");
+  const getReferenceData = () => {
+    console.log("Getting reference data...");
+    const data = csv(referenceData, rowFunc).then((rows) => {
+      return rows;
+    });
+    return data;
+  };
 
-    getData()
+  const getLiveData = () => {
+    console.log("Getting live data...");
+    const parseTime = timeParse("%d-%m-%Y %H:%M:%S.%f");
+    const data = csv(liveData, rowFunc).then((rows) => {
+      rows.forEach((row) => {
+        row.timestamp = parseTime(row.timestamp);
+      });
+      return rows;
+    });
+    return data;
+  };
+
+  useEffect(() => {
+    // dispatch({ type: "loading", payload: true });
+    console.log(`...loading: ${state.loading}`);
+    getReferenceData().then((data) => {
+      dispatch({ type: "referenceData", payload: data });
+      const randomRows = getRandomData(data, state.referenceSampleSize);
+      dispatch({ type: "randomReferenceData", payload: randomRows });
+    });
+
+    getLiveData()
       .then((data) => {
-        const randomRows = getRandomData(data, randomSampleSizePercent);
-        setData(() => randomRows);
+        dispatch({ type: "liveData", payload: data });
+        const randomRows = getRandomData(data, state.liveSampleSize);
+        dispatch({ type: "randomLiveData", payload: randomRows });
         return randomRows;
       })
       .then((data) => {
@@ -145,47 +168,41 @@ export default function App() {
         setGroupedData(() => grouped);
       });
 
+    // console.log(referenceDataArr.slice(10));
+    // console.log(liveDataArr.slice(10));
+
     return () => undefined;
   }, []);
 
-  if (state.loading) {
-    console.log("...loading");
-    return <pre>Loading...</pre>;
-  }
+  const resampleLiveData = () => {
+    const randomRows = getRandomData(state.liveData, state.liveSampleSize);
+    // console.log(randomRows);
+    console.log("how many times");
+    dispatch({ type: "randomLiveData", payload: randomRows });
+    const grouped = getGroupData(randomRows);
+    setGroupedData(grouped);
+  };
 
-  console.log("...loaded");
+  const resampleReferenceData = (data) => {
+    const randomRows = getRandomData(data, state.referenceSampleSize);
+    dispatch({ type: "randomReferenceData", payload: randomRows });
+  };
 
-  // function refreshData(e) {
-  //   getData(source)
-  //     .then((data) => {
-  //       const randomRows = getRandomData(data, randomSampleSizePercent);
-  //       setData(() => randomRows);
-  //       return randomRows;
-  //     })
-  //     .then((data) => {
-  //       const grouped = getGroupData(data);
-  //       setGroupedData(grouped);
-  //     });
-  //   if (open) {
-  //     toggle(false);
-  //   } else {
-  //     toggle(true);
-  //   }
-  // }
+  useEffect(() => {
+    if (state.liveData !== undefined) {
+      console.log(`resampling... ${state.liveSampleSize}`);
+      resampleLiveData();
+    }
+  }, [state.liveSampleSize]);
 
-  // const resample = () => {
-  //   getData(source)
-  //     .then((data) => {
-  //       console.log(data);
-  //       const randomRows = getRandomData(data, randomSampleSizePercent);
-  //       setData(() => randomRows);
-  //       return randomRows;
-  //     })
-  //     .then((data) => {
-  //       const grouped = getGroupData(data);
-  //       setGroupedData(grouped);
-  //     });
-  // };
+  useEffect(() => {
+    if (state.referenceData !== undefined) {
+      console.log(`resampling... ${state.referenceSampleSize}`);
+      resampleReferenceData(state.referenceData);
+    }
+  }, [state.referenceSampleSize]);
+
+  // console.log(state.randomLiveData.length);
 
   return (
     <div className="App">
@@ -196,11 +213,11 @@ export default function App() {
           </NavContainer>
         </Nav>
         <Main>
-          <Controls>{!state.loading && <ControlPanel />}</Controls>
+          <Controls>
+            <ControlPanel />
+          </Controls>
           <ChartsContainer>
-            {state.dateRange && (
-              <Scatter data={data} source={source} open={open} />
-            )}
+            {state.dateRange && <Scatter source={state.source} open={open} />}
             {state.dateRange && <Brush data={groupedData} />}
           </ChartsContainer>
         </Main>

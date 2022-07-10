@@ -23,7 +23,7 @@ const AxisLeft = ({ yScale, xScale, height, width, tickInterval }) => {
   // When the chart pans to the point where the axis is out of
   // bounds, truncate the position so that it stays within view
   // and the tick labels are visible
-  const truncatedXPos = min([width, max([10, xScale(0)])]);
+  const truncatedXPos = min([width - 15, max([15, xScale(0)])]);
   return (
     <svg style={{ overflow: "visible" }}>
       <path
@@ -39,7 +39,7 @@ const AxisLeft = ({ yScale, xScale, height, width, tickInterval }) => {
         ].join(" ")}
         fill="none"
       />
-      <g transform={`translate(${xScale(0) + 15},0) `}>
+      <g transform={`translate(${truncatedXPos + 15},0) `}>
         <text
           style={{
             fontSize: "12px",
