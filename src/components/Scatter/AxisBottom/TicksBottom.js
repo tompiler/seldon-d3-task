@@ -1,36 +1,13 @@
-import { animated, useTransition, to } from "react-spring";
-
-const TicksLeft = ({ ticks, xScale, height, color }) => {
-  const transitions = useTransition(ticks, {
-    from: ({ value }) => {
-      return { xOffset: xScale(value), opacity: 0 };
-    },
-    enter: ({ xOffset }) => {
-      return { xOffset: xOffset, opacity: 1 };
-    },
-    update: ({ xOffset }) => {
-      return { xOffset: xOffset, opacity: 1 };
-    },
-    leave: ({ value }) => {
-      return { xOffset: xScale(value), opacity: 0 };
-    },
-    keys: (item) => item.key,
-    config: { duration: 200 },
-  });
-
-  return transitions((styles, item) => {
+const TicksLeft = ({ ticks, height, color }) => {
+  return ticks.map((item) => {
     return (
-      <animated.g
+      <g
         key={item.value}
-        style={{
-          opacity: styles.opacity,
-          transform: to(styles.xOffset, (x) => `translate3d(${x}px, 0, 0)`),
-        }}
+        style={{ transform: `translate3d(${item.xOffset}px, 0, 0)` }}
       >
-        {/* <animated.line x1={-6} x2={0} stroke="currentColor" /> */}
-        <animated.line y1={height} y2={height + 6} stroke={color} />
+        <line y1={height} y2={height + 6} stroke={color} />
         {item.value !== 0 && (
-          <animated.text
+          <text
             key={item.value}
             y={height + 15}
             style={{
@@ -41,9 +18,9 @@ const TicksLeft = ({ ticks, xScale, height, color }) => {
             }}
           >
             {item.value}
-          </animated.text>
+          </text>
         )}
-      </animated.g>
+      </g>
     );
   });
 };
