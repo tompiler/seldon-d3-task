@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, { useState, useContext } from "react";
 import styled from "styled-components";
 import { timeParse, timeFormat } from "d3-time-format";
 import { DashboardContext } from "../../Context";
 import ObservationTime from "./ObservationTime";
 import DataSource from "./DataSource";
 import RandomSampleSize from "./RandomSampleSize";
+import PredictionFocus from "./PredictionFocus";
 
 const Container = styled.div`
   display: flex;
@@ -95,6 +96,7 @@ const ControlPanel = () => {
         <DataSource />
         <RandomSampleSize dataSource={"live"} />
         <RandomSampleSize dataSource={"reference"} />
+        <PredictionFocus />
       </OptionContainer>
     </Container>
   );

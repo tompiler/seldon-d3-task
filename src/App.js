@@ -1,8 +1,7 @@
 import "./App.css";
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Scatter from "./components/Scatter/Scatter";
 import Brush from "./components/Brush/Brush";
-import RefreshButton from "./components/RefreshButton";
 import ControlPanel from "./components/ControlPanel/ControlPanel";
 import { csv } from "d3-fetch";
 import { shuffle } from "d3-array";
@@ -71,23 +70,9 @@ const rowFunc = (d) => {
   return d;
 };
 
-const getData = (source) => {
-  const parseTime = timeParse("%d-%m-%Y %H:%M:%S.%f");
-  const rows = source === "live" ? liveData : referenceData;
-  // console.log(source, source === "live");
-  const data = csv(rows, rowFunc).then((rows) => {
-    rows.forEach((row) => {
-      row.timestamp = parseTime(row.timestamp);
-    });
-    return rows;
-  });
-  return data;
-};
-
 const getRandomData = (data, samplePercentage) => {
   const shuffled = shuffle(data);
   const nRows = Math.ceil(data.length * samplePercentage);
-  // console.log("nRows:", nRows, samplePercentage);
   const randomRows = shuffled.slice(0, nRows);
   return randomRows;
 };
@@ -109,14 +94,9 @@ const getGroupData = (data) => {
 
 export default function App() {
   const [groupedData, setGroupedData] = useState(null);
-  const [open, toggle] = useState(false);
-
-  const formatTime = timeFormat("%Y-%m-%d %H:%M");
-
   const [state, dispatch] = useContext(DashboardContext);
 
   const getReferenceData = () => {
-    console.log("Getting reference data...");
     const data = csv(referenceData, rowFunc).then((rows) => {
       return rows;
     });
@@ -124,7 +104,6 @@ export default function App() {
   };
 
   const getLiveData = () => {
-    console.log("Getting live data...");
     const parseTime = timeParse("%d-%m-%Y %H:%M:%S.%f");
     const data = csv(liveData, rowFunc).then((rows) => {
       rows.forEach((row) => {
@@ -136,8 +115,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    // dispatch({ type: "loading", payload: true });
-    console.log(`...loading: ${state.loading}`);
     getReferenceData().then((data) => {
       dispatch({ type: "referenceData", payload: data });
       const randomRows = getRandomData(data, state.referenceSampleSize);
@@ -168,16 +145,11 @@ export default function App() {
         setGroupedData(() => grouped);
       });
 
-    // console.log(referenceDataArr.slice(10));
-    // console.log(liveDataArr.slice(10));
-
     return () => undefined;
   }, []);
 
   const resampleLiveData = () => {
     const randomRows = getRandomData(state.liveData, state.liveSampleSize);
-    // console.log(randomRows);
-    console.log("how many times");
     dispatch({ type: "randomLiveData", payload: randomRows });
     const grouped = getGroupData(randomRows);
     setGroupedData(grouped);
@@ -190,19 +162,15 @@ export default function App() {
 
   useEffect(() => {
     if (state.liveData !== undefined) {
-      console.log(`resampling... ${state.liveSampleSize}`);
       resampleLiveData();
     }
   }, [state.liveSampleSize]);
 
   useEffect(() => {
     if (state.referenceData !== undefined) {
-      console.log(`resampling... ${state.referenceSampleSize}`);
       resampleReferenceData(state.referenceData);
     }
   }, [state.referenceSampleSize]);
-
-  // console.log(state.randomLiveData.length);
 
   return (
     <div className="App">
@@ -217,7 +185,7 @@ export default function App() {
             <ControlPanel />
           </Controls>
           <ChartsContainer>
-            {state.dateRange && <Scatter source={state.source} open={open} />}
+            {state.dateRange && <Scatter source={state.source} />}
             {state.dateRange && <Brush data={groupedData} />}
           </ChartsContainer>
         </Main>

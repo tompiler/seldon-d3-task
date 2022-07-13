@@ -17,6 +17,7 @@ const ScatterContainer = styled("div")`
 
 const Scatter = () => {
   const svgRef = useRef();
+  const gRef = useRef();
   const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
 
   const [state] = useContext(DashboardContext);
@@ -38,7 +39,6 @@ const Scatter = () => {
 
   // We need to create two yScales and two xScales
   // to manage a 'clean' extent to center the chart on 0
-
   const xExtents = [state.liveData, state.referenceData].map((dataset) => {
     return extent(dataset, (d) => {
       return d.x;
@@ -83,26 +83,57 @@ const Scatter = () => {
     .domain([-yMax, yMax])
     .range([boundedHeight, 0]);
 
-  if (currentZoomState) {
-    const newXScale = currentZoomState.rescaleX(xScaleLive);
-    xScaleLive.domain(newXScale.domain());
+  const newXScale = currentZoomState.rescaleX(xScaleLive);
+  xScaleLive.domain(newXScale.domain());
 
-    const newYScale = currentZoomState.rescaleY(yScaleLive);
-    yScaleLive.domain(newYScale.domain());
-  }
+  const newYScale = currentZoomState.rescaleY(yScaleLive);
+  yScaleLive.domain(newYScale.domain());
 
   useEffect(() => {
-    const svg = select(svgRef.current);
+    const g = select(gRef.current);
 
+    const zoomBehaviour = zoom()
+      .scaleExtent([0.5, 10])
+      .on("zoom", () => {
+        const zoomState = zoomTransform(g.node());
+        setCurrentZoomState(zoomState);
+      });
+    g.call(zoomBehaviour);
+  }, [currentZoomState]);
+
+  useEffect(() => {
+    const g = select(gRef.current);
+    if (state.selectedCluster === undefined) return;
+
+    // Have to replicate zoom behaviour above here
     const zoomBehaviour = zoom()
       .scaleExtent([0.8, 10])
       .on("zoom", () => {
-        const zoomState = zoomTransform(svg.node());
+        const zoomState = zoomTransform(g.node());
         setCurrentZoomState(zoomState);
       });
 
-    svg.call(zoomBehaviour);
-  }, [currentZoomState]);
+    if (state.selectedCluster === null) {
+      // If there is no cluster selected
+      g.transition()
+        .duration(750)
+        .call(zoomBehaviour.transform, zoomIdentity.translate(0, 0).scale(1));
+    } else {
+      // See 'random' method here -> https://observablehq.com/@d3/programmatic-zoom
+      g.transition()
+        .duration(750)
+        .call(
+          zoomBehaviour.transform,
+          zoomIdentity
+            .translate(width / 2 - marginLeft, height / 2 - marginTop)
+            .scale(3)
+            .translate(
+              -newXScale(state.selectedClusterCentroid[0]),
+              -newYScale(state.selectedClusterCentroid[1])
+            )
+        );
+    }
+  }, [state.selectedClusterCentroid]);
 
   const tickInterval = currentZoomState.k >= 2.5 ? 2 : 5;
 
@@ -120,9 +151,15 @@ const Scatter = () => {
           </clipPath>
         </defs>
         <g
+          ref={gRef}
           clipPath={`url(#${clipPathId})`}
           transform={`translate(${marginLeft},${marginTop}) `}
         >
+          <rect
+            height={boundedHeight}
+            width={boundedWidth}
+            style={{ fill: "transparent" }}
+          ></rect>
           <AxisLeft
             yScale={yScaleLive}
             xScale={xScaleLive}
@@ -140,6 +177,8 @@ const Scatter = () => {
           <Points
             yScale={yScaleLive}
             xScale={xScaleLive}
+            xReScale={newXScale}
+            yReScale={newYScale}
             currentZoomState={currentZoomState}
           />
         </g>

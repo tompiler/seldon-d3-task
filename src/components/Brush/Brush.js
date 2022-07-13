@@ -76,15 +76,58 @@ const Brush = ({ data }) => {
       (xScale.paddingInner() + xScale.step()) * maxBrushSizeHours;
     let ps = [];
 
+    const points = [
+      [0, 0],
+      [-12, boundedHeight / 2],
+      [0, boundedHeight],
+    ];
+
+    const wrapper = (points, type) => {
+      return line()
+        .x((d, i) => {
+          return type === 1 ? -d[0] : +d[0];
+        })
+        .y((d) => d[1])
+        .curve(curveCatmullRom.alpha(0.9))(points);
+    };
+
+    const brushHandle = (g, selection) => {
+      // don't create custom brushHandles if useChartDimensions
+      // hasn't calculated boundedHeight properly
+      if (boundedHeight <= 0) return;
+
+      g.selectAll(".handle--custom")
+        .data([{ type: "w" }, { type: "e" }])
+        .join((enter) =>
+          enter
+            .append("path")
+            .attr("class", "handle--custom")
+            .style("stroke", "rgb(120, 120, 120)")
+            .style("fill", "rgb(120, 120, 120)")
+            .style("fill-opacity", 1)
+            .attr("cursor", "ew-resize")
+            .attr("d", (_, i) => {
+              return wrapper(points, i);
+            })
+        )
+        .attr("display", selection === null ? "none" : null)
+        .attr(
+          "transform",
+          selection === null ? null : (d, i) => `translate(${selection[i]},0)`
+        );
+    };
+
     const brush = brushX()
       .extent([
         [xScale(xExtent[0]), 0],
         [boundedWidth - xScale(xExtent[0]), boundedHeight],
       ])
       .on("start brush end", (event) => {
-        if (!event.sourceEvent) return; // don't process events which don't come from interaction with the brush
+        // don't process events which don't come from interaction with the brush
+        if (!event.sourceEvent) {
+          return;
+        }
         svg.select(".brush").call(brushHandle, event.selection);
-        console.log(event.selection);
         var s = event.selection;
         const newDateRange = event.selection.map(scaleBandInvert(xScale));
         if (event.type === "start") {
@@ -112,43 +155,6 @@ const Brush = ({ data }) => {
         }
       });
 
-    const points = [
-      [0, 0],
-      [-12, boundedHeight / 2],
-      [0, boundedHeight],
-    ];
-
-    const wrapper = (points, type) => {
-      return line()
-        .x((d, i) => {
-          console.log(d, i, d[0], -d[0], type);
-          return type === 1 ? -d[0] : +d[0];
-        })
-        .y((d) => d[1])
-        .curve(curveCatmullRom.alpha(0.5))(points);
-    };
-
-    const brushHandle = (g, selection) =>
-      g
-        .selectAll(".handle--custom")
-        .data([{ type: "w" }, { type: "e" }])
-        .join((enter) =>
-          enter
-            .append("path")
-            .attr("class", "handle--custom")
-            .style("fill", "rgb(100, 100, 100)")
-            .style("fill-opacity", 1)
-            .attr("cursor", "ew-resize")
-            .attr("d", (_, i) => {
-              return wrapper(points, i);
-            })
-        )
-        .attr("display", selection === null ? "none" : null)
-        .attr(
-          "transform",
-          selection === null ? null : (d, i) => `translate(${selection[i]},0)`
-        );
-
     if (state.source === "reference") {
       svg.select(".overlay").style("pointer-events", "none");
       svg.select(".brush").style("pointer-events", "none");
@@ -161,7 +167,8 @@ const Brush = ({ data }) => {
       svg
         .select(".brush")
         .call(brush)
-        .call(brush.move, state.dateRange.map(xScale));
+        .call(brush.move, state.dateRange.map(xScale))
+        .call(brushHandle, state.dateRange.map(xScale));
     }
 
     if (previousSelection === state.dateRange) {
@@ -178,11 +185,13 @@ const Brush = ({ data }) => {
     }
   }, [
     data,
-    dimensions,
+    state,
+    dispatch,
     boundedWidth,
     boundedHeight,
     previousSelection,
     xScale,
+    xExtent,
   ]);
 
   const color = "rgb(60,60,60)";

@@ -18,6 +18,10 @@ export const reducer = (state, action) => {
       return { ...state, liveSampleSize: action.payload };
     case "referenceSampleSize":
       return { ...state, referenceSampleSize: action.payload };
+    case "selectedCluster":
+      return { ...state, selectedCluster: action.payload };
+    case "selectedClusterCentroid":
+      return { ...state, selectedClusterCentroid: action.payload };
     case "multiple":
       return { ...state, ...action.payload };
     default:
@@ -34,4 +38,5 @@ export const initialState = {
   referenceData: [],
   randomLiveData: [],
   randomReferenceData: [],
+  selectedCluster: undefined,
 };

@@ -30,14 +30,11 @@ const DataSourceButton = styled.button`
   border-radius: 4px;
   border: none;
   padding: 10px;
-  /* background-color: rgb(190, 200, 240); */
 
   background-color: ${(props) =>
     props.selected ? "rgb(255, 140, 59)" : "rgb(209, 214, 235)"};
 
   &:hover {
-    /* background-color: rgba(255, 255, 255, 0.9); */
-    /* opacity: 0.5; */
     box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.2);
   }
 `;
