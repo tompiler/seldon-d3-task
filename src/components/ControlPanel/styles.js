@@ -7,7 +7,7 @@ export const Title = styled.div`
 `;
 
 export const Input = styled.input`
-  width: 80%;
+  width: 90%;
   height: 80%;
   flex: 1;
   position: relative;
@@ -29,7 +29,7 @@ export const Input = styled.input`
 
 export const Field = styled.div`
   flex: 1;
-  width: 80%;
+  width: 90%;
   height: 20%;
   margin: 0.5vh 0;
   padding: 1vh 0;

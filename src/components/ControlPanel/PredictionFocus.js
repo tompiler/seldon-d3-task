@@ -11,7 +11,7 @@ const PredictionFocusContainer = styled.div`
   width: 80%;
   font-size: 1em;
   border-radius: 3px;
-  padding: 1vh 0.4vw;
+  padding: 0.7vh 0.4vw;
 `;
 
 const ButtonContainer = styled.div`
@@ -28,20 +28,19 @@ const ClusterButton = styled.button`
   font-weight: 400;
   text-align: center;
   cursor: pointer;
-  transition: 0.3s;
   border-radius: 4px;
   border: none;
   padding: 8px;
   margin: 3px;
   color: rgb(50, 50, 50);
-  background-color: rgb(209, 214, 235);
+  background-color: white;
+
+  transition: border-left 0.3s ease-in;
 
   border-left: ${(props) =>
-    props.selected
-      ? `12px solid ${props.color}`
-      : `12px solid rgb(209, 214, 235)`};
+    props.selected ? `12px solid ${props.color}` : `12px solid white`};
 
-  border-right: 12px solid rgb(209, 214, 235);
+  border-right: 12px solid white;
 
   &:hover {
     box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.2);

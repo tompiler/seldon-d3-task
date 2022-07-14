@@ -6,23 +6,24 @@ import ObservationTime from "./ObservationTime";
 import DataSource from "./DataSource";
 import RandomSampleSize from "./RandomSampleSize";
 import PredictionFocus from "./PredictionFocus";
+import Reset from "./Reset";
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin: 1vh 1vw;
+  margin: 2vh 1vw;
 `;
 
 const OptionContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 80%;
+  width: 90%;
   font-family: Open Sans;
   color: rgb(50, 50, 50);
-  background-color: rgb(240, 242, 245);
+  background-color: rgb(220, 240, 255);
   border-radius: 3px;
   padding: 0.5vh 0.4vw;
 `;
@@ -33,7 +34,7 @@ const ApplyButton = styled.button`
   height: 100%;
   margin: 0vh 0 1vh 0;
   font-size: 1em;
-  font-weight: 400;
+  font-weight: 600;
 
   text-align: center;
   cursor: pointer;
@@ -41,7 +42,7 @@ const ApplyButton = styled.button`
   border-radius: 4px;
   border: none;
   padding: 0.5em;
-  background-color: rgb(255, 140, 59);
+  background-color: rgb(170, 194, 245);
   transition: 0.2s all;
 
   &:hover {
@@ -94,6 +95,7 @@ const ControlPanel = () => {
         />
         <ApplyButton onClick={applyControls}>Apply</ApplyButton>
         <DataSource />
+        <Reset />
         <RandomSampleSize dataSource={"live"} />
         <RandomSampleSize dataSource={"reference"} />
         <PredictionFocus />

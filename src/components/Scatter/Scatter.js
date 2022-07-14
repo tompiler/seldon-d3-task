@@ -80,6 +80,20 @@ const Scatter = () => {
 
   useEffect(() => {
     const g = select(gRef.current);
+    const zoomBehaviour = zoom()
+      .scaleExtent([0.5, 6])
+      .on("zoom", ({ transform }) => {
+        if (transform.k) {
+          console.log("Hello");
+          setCurrentZoomState(transform);
+        }
+      });
+
+    g.transition().duration(750).call(zoomBehaviour.transform, zoomIdentity);
+  }, [state.zoomReset]);
+
+  useEffect(() => {
+    const g = select(gRef.current);
 
     const zoomBehaviour = zoom()
       .scaleExtent([0.5, 6])
@@ -144,33 +158,35 @@ const Scatter = () => {
             />
           </clipPath>
         </defs>
-        <g transform={`translate(${marginLeft},${marginTop}) `}>
-          <g ref={gRef}>
-            <rect // for detecting zoom events
-              height={boundedHeight}
-              width={boundedWidth}
-              style={{ fill: "transparent" }}
-            ></rect>
-            <AxisLeft
-              yScale={yScale}
-              xScale={xScale}
-              width={boundedWidth}
-              height={boundedHeight}
-              tickInterval={tickInterval}
-            />
-            <AxisBottom
-              xScale={xScale}
-              yScale={yScale}
-              height={boundedHeight}
-              width={boundedWidth}
-              tickInterval={tickInterval}
-            />
-            <Points
-              yScale={yScale}
-              xScale={xScale}
-              currentZoomState={currentZoomState}
-            />
-          </g>
+        <g
+          ref={gRef}
+          clipPath={`url(#${clipPathId})`}
+          transform={`translate(${marginLeft},${marginTop}) `}
+        >
+          <rect // for detecting zoom events
+            height={boundedHeight}
+            width={boundedWidth}
+            style={{ fill: "transparent" }}
+          ></rect>
+          <AxisLeft
+            yScale={yScale}
+            xScale={xScale}
+            width={boundedWidth}
+            height={boundedHeight}
+            tickInterval={tickInterval}
+          />
+          <AxisBottom
+            xScale={xScale}
+            yScale={yScale}
+            height={boundedHeight}
+            width={boundedWidth}
+            tickInterval={tickInterval}
+          />
+          <Points
+            yScale={yScale}
+            xScale={xScale}
+            currentZoomState={currentZoomState}
+          />
         </g>
       </svg>
     </ScatterContainer>

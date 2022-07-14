@@ -15,7 +15,7 @@ const RandomSampleSizeContainer = styled.div`
   width: 80%;
   font-size: 1em;
   border-radius: 3px;
-  padding: 1vh 0.4vw;
+  padding: 0.7vh 0.4vw;
 `;
 
 const track = css`
