@@ -144,7 +144,7 @@ function Slider({ dataSource }) {
   // console.log(state.liveSampleSize);
   return (
     <RandomSampleSizeContainer>
-      <Title>{`Sample Size [${capitalizeFirstLetter(dataSource)}]`}</Title>
+      <Title>{`Sample Size - ${capitalizeFirstLetter(dataSource)}`}</Title>
       <Input
         onInput={(e) => {
           dispatch({

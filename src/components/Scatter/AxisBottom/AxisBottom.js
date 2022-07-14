@@ -11,7 +11,6 @@ const AxisBottom = ({ xScale, yScale, width, height, tickInterval }) => {
     const pixelsPerTick = width / domainWidth;
     const numberOfTicksTarget =
       Math.max(1, Math.floor(width / pixelsPerTick)) / tickInterval;
-
     return xScale.ticks(numberOfTicksTarget).map((value) => ({
       value,
       xOffset: xScale(value),

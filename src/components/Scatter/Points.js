@@ -1,10 +1,9 @@
 import { useContext, useEffect } from "react";
 import { DashboardContext } from "../../Context";
-import { extent, mean } from "d3-array";
+import { mean } from "d3-array";
 import { labelColours } from "../../fixed";
-import { zoom, zoomTransform, ZoomTransform, zoomIdentity } from "d3-zoom";
 
-const Circles = ({ xScale, yScale, xReScale, yReScale, currentZoomState }) => {
+const Circles = ({ xScale, yScale, currentZoomState }) => {
   const [state, dispatch] = useContext(DashboardContext);
   const predictionOrLabel = state.source === "live" ? "prediction" : "label";
 
