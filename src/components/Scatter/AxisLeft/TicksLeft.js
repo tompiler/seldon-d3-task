@@ -1,24 +1,4 @@
-import React from "react";
-import { animated, useTransition, to } from "react-spring";
-
-const TicksLeft = ({ ticks, yScale, height, color }) => {
-  // const transitions = useTransition(ticks, {
-  //   from: ({ value }) => {
-  //     return { yOffset: yScale(value), opacity: 0 };
-  //   },
-  //   enter: ({ yOffset }) => {
-  //     return { yOffset: yOffset, opacity: 1 };
-  //   },
-  //   update: ({ yOffset }) => {
-  //     return { yOffset: yOffset, opacity: 1 };
-  //   },
-  //   leave: ({ value }) => {
-  //     return { yOffset: yScale(value), opacity: 0 };
-  //   },
-  //   keys: (item) => item.key,
-  //   config: { duration: 200 },
-  // });
-
+const TicksLeft = ({ ticks, height, color }) => {
   return ticks.map((item) => {
     return (
       <g

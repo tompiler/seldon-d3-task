@@ -39,7 +39,7 @@ export const useChartDimensions = (passedSettings) => {
     resizeObserver.observe(element);
 
     return () => resizeObserver.unobserve(element);
-  }, []);
+  }, [dimensions, width, height]);
 
   const newSettings = combineChartDimensions({
     ...dimensions,

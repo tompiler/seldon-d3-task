@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React from "react";
 import styled from "styled-components";
 import { labels, labelColours } from "../../fixed";
 

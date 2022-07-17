@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import styled from "styled-components";
-import { Title } from "./styles";
 import { DashboardContext } from "../../Context";
 
 const ResetContainer = styled.div`
@@ -41,9 +40,8 @@ const ResetButton = styled.button`
 `;
 
 const Reset = () => {
-  const [state, dispatch] = useContext(DashboardContext);
+  const [, dispatch] = useContext(DashboardContext);
 
-  const liveOn = state.source === "live";
   return (
     <ResetContainer>
       <ButtonContainer>

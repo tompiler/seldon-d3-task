@@ -124,8 +124,6 @@ const Scatter = () => {
       g.transition().duration(750).call(zoomBehaviour.transform, zoomIdentity);
     } else {
       // See 'random' method here -> https://observablehq.com/@d3/programmatic-zoom
-      console.log("New cluster selected", xScale(0));
-
       const xScaleZ = scaleLinear()
         .domain([-25, +25]) // can't seem to set this declaratively
         .range([0, boundedWidth]);
