@@ -33,9 +33,9 @@ const scaleBandInvert = (scale) => {
 const Brush = ({ data }) => {
   const margins = {
     marginTop: 20,
-    marginRight: 150,
+    marginRight: 20,
     marginBottom: 50,
-    marginLeft: 150,
+    marginLeft: 70,
   };
 
   const [state, dispatch] = useContext(DashboardContext);

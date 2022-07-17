@@ -3,7 +3,7 @@ import { DashboardContext } from "../../Context";
 import { mean } from "d3-array";
 import { labelColours } from "../../fixed";
 
-const Circles = ({ xScale, yScale, currentZoomState }) => {
+const Circles = ({ xScale, yScale, currentZoomState, setTooltipData }) => {
   const [state, dispatch] = useContext(DashboardContext);
   const predictionOrLabel = state.source === "live" ? "prediction" : "label";
 
@@ -41,8 +41,16 @@ const Circles = ({ xScale, yScale, currentZoomState }) => {
 
     return (
       <circle
+        onMouseEnter={(e) => {
+          setTooltipData(() => {
+            return { ...d, pageX: e.pageX, pageY: e.pageY };
+          });
+        }}
+        onMouseLeave={() => {
+          setTooltipData(false);
+        }}
         key={i}
-        r={Math.min(3, currentZoomState.k * 2)}
+        r={Math.max(0.5, currentZoomState.k ** 1.05)}
         cx={xScale(d.x)}
         cy={yScale(d.y)}
         style={{
@@ -51,7 +59,16 @@ const Circles = ({ xScale, yScale, currentZoomState }) => {
               ? labelColours[prediction]
               : "rgb(210,210,210)"
             : labelColours[prediction],
-          opacity: 0.9,
+          stroke: `${
+            state.selectedCluster
+              ? state.selectedCluster === prediction
+                ? labelColours[prediction]
+                : "rgb(210,210,210)"
+              : labelColours[prediction]
+          }`,
+          strokeWidth: "3px",
+          cursor: "pointer",
+          opacity: 0.8,
         }}
       />
     );

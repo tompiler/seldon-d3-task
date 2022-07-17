@@ -1,17 +1,18 @@
 import "./App.css";
 import React, { useState, useEffect, useContext } from "react";
 import Scatter from "./components/Scatter/Scatter";
+import Legend from "./components/Scatter/Legend";
 import Brush from "./components/Brush/Brush";
 import ControlPanel from "./components/ControlPanel/ControlPanel";
 import { csv } from "d3-fetch";
 import { shuffle } from "d3-array";
-import { timeParse, timeFormat } from "d3-time-format";
+import { timeParse } from "d3-time-format";
 import liveData from "./data/live.csv";
 import referenceData from "./data/reference.csv";
 import styled from "styled-components";
 import { flatRollup, ascending } from "d3-array";
 import { timeHour } from "d3-time";
-import { min, max } from "d3-array";
+import { min } from "d3-array";
 
 import { DashboardContext } from "./Context";
 
@@ -46,7 +47,7 @@ const Main = styled("div")`
 
 const Controls = styled("div")`
   display: flex;
-  width: 25%;
+  width: 20%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0);
 `;
@@ -54,7 +55,14 @@ const Controls = styled("div")`
 const ChartsContainer = styled("div")`
   display: flex;
   flex-flow: column;
-  width: 75%;
+  width: 50%;
+  height: 100%;
+`;
+
+const ExplainContainer = styled("div")`
+  display: flex;
+  flex-flow: row;
+  width: 30%;
   height: 100%;
 `;
 
@@ -190,6 +198,9 @@ export default function App() {
             {state.dateRange && <Scatter source={state.source} />}
             {state.dateRange && <Brush data={groupedData} />}
           </ChartsContainer>
+          <ExplainContainer>
+            {state.dateRange && <Legend source={state.source} />}
+          </ExplainContainer>
         </Main>
       </Section>
     </div>

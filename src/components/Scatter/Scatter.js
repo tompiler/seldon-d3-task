@@ -9,6 +9,7 @@ import { zoom, zoomIdentity } from "d3-zoom";
 import { useChartDimensions } from "../../hooks/useChartDimensions";
 import { DashboardContext } from "../../Context";
 import Points from "./Points";
+import Tooltip from "./Tooltip";
 
 const ScatterContainer = styled("div")`
   width: 100%;
@@ -18,13 +19,14 @@ const ScatterContainer = styled("div")`
 const Scatter = () => {
   const gRef = useRef();
   const [currentZoomState, setCurrentZoomState] = useState(zoomIdentity);
+  const [tooltipData, setTooltipData] = useState(false);
   const [state] = useContext(DashboardContext);
 
   const margins = {
     marginTop: 30,
-    marginRight: 150,
+    marginRight: 20,
     marginBottom: 30,
-    marginLeft: 150,
+    marginLeft: 70,
   };
 
   const [ref, dimensions] = useChartDimensions(margins);
@@ -78,10 +80,11 @@ const Scatter = () => {
   const newYScale = currentZoomState.rescaleY(yScale);
   yScale.domain(newYScale.domain());
 
+  // Zoom Reset Button
   useEffect(() => {
     const g = select(gRef.current);
     const zoomBehaviour = zoom()
-      .scaleExtent([0.5, 6])
+      .scaleExtent([0.5, 10])
       .on("zoom", ({ transform }) => {
         if (transform.k) {
           console.log("Hello");
@@ -92,17 +95,19 @@ const Scatter = () => {
     g.transition().duration(750).call(zoomBehaviour.transform, zoomIdentity);
   }, [state.zoomReset]);
 
+  // Set Zoom State
   useEffect(() => {
     const g = select(gRef.current);
 
     const zoomBehaviour = zoom()
-      .scaleExtent([0.5, 6])
+      .scaleExtent([0.5, 10])
       .on("zoom", ({ transform }) => {
         setCurrentZoomState(transform);
       });
     g.call(zoomBehaviour);
   }, [currentZoomState]);
 
+  // Zoom in on clusters
   useEffect(() => {
     const g = select(gRef.current);
     if (state.selectedCluster === undefined) return;
@@ -122,11 +127,11 @@ const Scatter = () => {
       console.log("New cluster selected", xScale(0));
 
       const xScaleZ = scaleLinear()
-        .domain([-25, +25])
+        .domain([-25, +25]) // can't seem to set this declaratively
         .range([0, boundedWidth]);
 
       const yScaleZ = scaleLinear()
-        .domain([-20, +20])
+        .domain([-20, +20]) // can't seem to set this declaratively
         .range([boundedHeight, 0]);
 
       const zoomChange = zoomIdentity
@@ -147,6 +152,7 @@ const Scatter = () => {
 
   return (
     <ScatterContainer ref={ref}>
+      {tooltipData && <Tooltip row={tooltipData} />}
       <svg width={width} height={height}>
         <defs>
           <clipPath id={clipPathId}>
@@ -166,8 +172,9 @@ const Scatter = () => {
           <rect // for detecting zoom events
             height={boundedHeight}
             width={boundedWidth}
-            style={{ fill: "transparent" }}
+            style={{ fill: "transparent", cursor: "pointer" }}
           ></rect>
+
           <AxisLeft
             yScale={yScale}
             xScale={xScale}
@@ -186,6 +193,7 @@ const Scatter = () => {
             yScale={yScale}
             xScale={xScale}
             currentZoomState={currentZoomState}
+            setTooltipData={setTooltipData}
           />
         </g>
       </svg>

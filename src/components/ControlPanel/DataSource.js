@@ -29,17 +29,22 @@ const ButtonContainer = styled.div`
 
 const DataSourceButton = styled.button`
   width: 90%;
-  font-size: 1em;
+  font-size: 0.9em;
   font-weight: 400;
   text-align: center;
   cursor: pointer;
   transition: 0.3s;
   border-radius: 4px;
-  border: none;
+  border: ${(props) =>
+    props.selected
+      ? "1.2px solid rgb(90, 114, 205)"
+      : "1.2px solid rgb(203, 203, 203)"};
   padding: 10px;
 
   background-color: ${(props) =>
-    props.selected ? "rgb(255, 140, 59)" : "rgb(209, 214, 235)"};
+    props.selected ? "rgb(170,194,245)" : "rgb(203, 203, 203)"};
+
+  color: rgb(30, 30, 30);
 
   &:hover {
     box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.2);
@@ -48,7 +53,7 @@ const DataSourceButton = styled.button`
 
 const RandomiseButton = styled.button`
   width: 90%;
-  font-size: 0.8em;
+  font-size: 0.75em;
   font-weight: 400;
   text-align: center;
   cursor: pointer;
@@ -59,10 +64,13 @@ const RandomiseButton = styled.button`
   padding: 5px;
 
   background-color: ${(props) =>
-    props.selected ? "rgb(255, 140, 59)" : "rgb(209, 214, 235)"};
+    props.selected ? "rgb(209, 214, 235)" : "rgb(240, 240, 250)"};
 
+  color: ${(props) => (props.selected ? "rgb(30,30,30)" : "rgb(220,240,255)")};
+  pointer-events: ${(props) => (props.selected ? "all" : "none")};
   &:hover {
-    box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: ${(props) =>
+      props.selected ? "0px 4px 8px 0px rgba(0, 0, 0, 0.2)" : "none"};
   }
 `;
 
@@ -92,6 +100,7 @@ const DataSource = () => {
             Reference
           </DataSourceButton>
           <RandomiseButton
+            selected={!liveOn}
             onClick={() => {
               if (!liveOn) {
                 console.log(state.referenceSampleSize);
@@ -122,6 +131,7 @@ const DataSource = () => {
             Live
           </DataSourceButton>
           <RandomiseButton
+            selected={liveOn}
             onClick={() => {
               if (liveOn) {
                 console.log(state.liveSampleSize);

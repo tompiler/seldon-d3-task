@@ -33,8 +33,7 @@ const ResetButton = styled.button`
   margin: 0.3vh 0;
   padding: 5px;
 
-  background-color: ${(props) =>
-    props.selected ? "rgb(255, 140, 59)" : "rgb(209, 214, 235)"};
+  background-color: rgb(170, 194, 245);
 
   &:hover {
     box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.2);

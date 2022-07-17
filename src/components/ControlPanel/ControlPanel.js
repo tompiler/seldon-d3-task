@@ -20,12 +20,12 @@ const OptionContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 90%;
+  width: 100%;
   font-family: Open Sans;
   color: rgb(50, 50, 50);
-  background-color: rgb(220, 240, 255);
+  background-color: rgb(240, 240, 250);
   border-radius: 3px;
-  padding: 0.5vh 0.4vw;
+  padding: 0.5vh 0vw;
 `;
 
 const ApplyButton = styled.button`
@@ -43,6 +43,7 @@ const ApplyButton = styled.button`
   border: none;
   padding: 0.5em;
   background-color: rgb(170, 194, 245);
+  color: rgb(50, 50, 50);
   transition: 0.2s all;
 
   &:hover {
