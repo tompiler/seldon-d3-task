@@ -9,6 +9,11 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: seldon-d3-task # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: 'build'  # set this to the path to your web app project, defaults to the repository root
+  NODE_VERSION: '16.x'                # set this to the node version to use
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -57,7 +62,9 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'seldon-d3-task'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_243427BB00A042D0BD12E0EC20475234 }}
-          package: .
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        env:
+          CI: true
