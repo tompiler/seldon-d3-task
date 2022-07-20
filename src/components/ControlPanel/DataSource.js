@@ -103,7 +103,6 @@ const DataSource = () => {
             selected={!liveOn}
             onClick={() => {
               if (!liveOn) {
-                console.log(state.referenceSampleSize);
                 dispatch({
                   type: "randomReferenceDataRefresh",
                 });
@@ -134,7 +133,6 @@ const DataSource = () => {
             selected={liveOn}
             onClick={() => {
               if (liveOn) {
-                console.log(state.liveSampleSize);
                 dispatch({
                   type: "randomLiveDataRefresh",
                 });

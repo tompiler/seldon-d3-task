@@ -87,7 +87,6 @@ const Scatter = () => {
       .scaleExtent([0.5, 10])
       .on("zoom", ({ transform }) => {
         if (transform.k) {
-          console.log("Hello");
           setCurrentZoomState(transform);
         }
       });

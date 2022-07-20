@@ -170,14 +170,12 @@ export default function App() {
 
   useEffect(() => {
     if (state.liveData !== undefined) {
-      console.log("Randomised live sample", state.liveSampleSize);
       resampleLiveData();
     }
   }, [state.liveSampleSize, state.randomLiveDataRefresh]);
 
   useEffect(() => {
     if (state.referenceData !== undefined) {
-      console.log("Randomised reference sample");
       resampleReferenceData(state.referenceData);
     }
   }, [state.referenceSampleSize, state.randomReferenceDataRefresh]);
