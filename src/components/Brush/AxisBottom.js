@@ -6,7 +6,7 @@ const AxisBottom = ({ xScale, height, color }) => {
   const domain = xScale.domain();
   const range = xScale.range();
 
-  const tickInterval = 16;
+  const tickInterval = 24; // constant to keep it simple
 
   const ticks = domain.filter((d, i) => {
     return i % tickInterval === 0;

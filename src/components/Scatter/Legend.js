@@ -12,7 +12,7 @@ const Container = styled("div")`
 
 const LegendContainer = styled("div")`
   width: 100%;
-  height: 53%;
+  height: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -20,7 +20,7 @@ const LegendContainer = styled("div")`
 
 const InfoContainer = styled("div")`
   width: 100%;
-  height: 47%;
+  height: 50%;
   display: flex;
   flex-direction: column;
 `;
@@ -153,6 +153,7 @@ const Legend = () => {
                 <li>
                   New 'clusters' of the reduced features are detected starting
                   at midnight on September 6th and observed throughout the day
+                  for pullover and t-shirt
                 </li>
               </ul>
             </InfoBullet>

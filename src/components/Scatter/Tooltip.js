@@ -2,6 +2,7 @@ import { useContext } from "react";
 import styled from "styled-components";
 import { timeFormat } from "d3-time-format";
 import { DashboardContext } from "../../Context";
+import { capitalizeFirstLetter } from "../../util";
 
 const TooltipContainer = styled("div")`
   display: flex;
@@ -29,11 +30,11 @@ const Row = styled("div")`
 
 const ColumnCell = styled("div")`
   font-weight: 600;
-  width: 4vw;
+  width: 5vw;
 `;
 
 const ValueCell = styled("div")`
-  width: 10vw;
+  width: 7vw;
 `;
 
 const Tooltip = ({ row }) => {
@@ -50,7 +51,9 @@ const Tooltip = ({ row }) => {
           </Row>
         )}
         <Row>
-          <ColumnCell>Label:</ColumnCell>
+          <ColumnCell>{`${capitalizeFirstLetter(
+            predictionOrLabel
+          )}: `}</ColumnCell>
           <ValueCell>{row[predictionOrLabel]}</ValueCell>
         </Row>
       </Content>

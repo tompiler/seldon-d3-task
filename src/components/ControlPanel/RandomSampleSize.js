@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import styled, { css } from "styled-components";
 import { Title } from "./styles";
 import { DashboardContext } from "../../Context";
+import { capitalizeFirstLetter } from "../../util";
 
 const trackH = "0.4em";
 const thumbD = "1.5em";
@@ -136,10 +137,6 @@ function Slider({ dataSource }) {
   const divisor = dataSource === "live" ? 100 : 1000;
   const step = dataSource === "live" ? 5 : 10;
   const max = dataSource === "live" ? 100 : 10;
-
-  function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
 
   // console.log(state.liveSampleSize);
   return (
